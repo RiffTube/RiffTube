@@ -1,39 +1,23 @@
 import { FieldError } from 'react-hook-form';
 import TextInput, { TextInputProps } from '@/components/TextInput';
 
-type AuthFieldProps = Pick<
-  TextInputProps,
-  'id' | 'value' | 'onChange' | 'placeholder' | 'type' | 'required' | 'pattern'
-> & {
-  /** Visible label for the input */
+type AuthFieldProps = Omit<TextInputProps, 'errorMessage' | 'infoMessage'> & {
   label: string;
-  /** Field error from React Hook Form (if any) */
   error?: FieldError;
 };
 
-function AuthField({
-  id,
-  label,
-  value,
-  onChange,
-  placeholder,
-  type,
-  required,
-  pattern,
-  error,
-}: AuthFieldProps) {
+function AuthField(props: AuthFieldProps) {
+  const { id, label, error, value, onChange, ...rest } = props;
+
   return (
     <div className="mb-4">
       <TextInput
         id={id}
         label={label}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        type={type}
-        required={required}
-        pattern={pattern}
+        {...(value !== undefined ? { value } : {})}
+        {...(onChange ? { onChange } : {})}
         errorMessage={error?.message}
+        {...rest}
       />
     </div>
   );

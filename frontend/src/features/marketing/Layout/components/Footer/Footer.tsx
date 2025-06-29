@@ -30,7 +30,7 @@ function Footer() {
             <YouTubeIcon className="h-6 w-6 fill-none stroke-current stroke-2 text-white" />
           </a>
         </div>
-        <div className="items-bassseline flex gap-2">
+        <div className="flex items-baseline gap-2">
           <TVIcon
             className="h-6 w-auto fill-current text-white sm:h-8"
             aria-hidden="true"

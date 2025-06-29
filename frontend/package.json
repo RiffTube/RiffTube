@@ -50,6 +50,7 @@
     "eslint-plugin-vitest": "^0.5.4",
     "globals": "^15.15.0",
     "jsdom": "^26.1.0",
+    "jsesc": "^2.5.2",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.12",
