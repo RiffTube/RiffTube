@@ -3,6 +3,8 @@
   "files.trimTrailingWhitespace": true,
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
+  "prettier.configPath": "frontend/prettier.config.cjs",
+  "prettier.prettierPath": "frontend/node_modules/prettier",
   "prettier.requireConfig": true,
 
   // Global ESLint settings for JavaScript/TypeScript

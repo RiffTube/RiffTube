@@ -1,8 +1,8 @@
+import path from 'path';
+import tailwind from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
-import react from '@vitejs/plugin-react';
-import tailwind from '@tailwindcss/vite';
-import path from 'path';
 
 export default defineConfig({
   resolve: {

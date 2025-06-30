@@ -7,14 +7,14 @@ export interface CardProps {
 
 function Card({ number, title, Icon, children }: CardProps) {
   return (
-    <div className="min-w-0 bg-flicker-white rounded-lg border-4 border-backstage p-6 flex flex-col items-center text-center">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-backstage text-white grid place-items-center font-semibold">
+    <div className="flex min-w-0 flex-col items-center rounded-lg border-4 border-backstage bg-flicker-white p-6 text-center">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-full bg-backstage font-semibold text-white">
           {number}
         </div>
         <h3 className="text-xl font-bold">{title}</h3>
       </div>
-      <Icon aria-hidden="true" className="h-12 w-12 mb-4" />
+      <Icon aria-hidden="true" className="mb-4 h-12 w-12" />
       <p className="text-base">{children}</p>
     </div>
   );

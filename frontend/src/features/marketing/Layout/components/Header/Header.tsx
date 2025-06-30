@@ -4,9 +4,9 @@ import TvIcon from '@/assets/rifftube-logo.svg?react';
 function Header() {
   return (
     <header className="bg-backstage">
-      <div className="container max-w-screen-2xl mx-auto px-4 py-4">
+      <div className="container mx-auto max-w-screen-2xl px-4 py-4">
         <nav
-          className="mx-auto w-full flex items-center justify-between"
+          className="mx-auto flex w-full items-center justify-between"
           aria-label="Main navigation"
         >
           <Link to="/" aria-label="Home">
@@ -18,7 +18,7 @@ function Header() {
 
           <Link
             to="/login"
-            className="text-lg font-semibold text-white hover:text-primary transition-colors"
+            className="text-lg font-semibold text-white transition-colors hover:text-primary"
           >
             Log in
           </Link>

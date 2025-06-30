@@ -55,14 +55,11 @@ npm run format
 You can also target each side individually:
 
 ```bash
-
 # Frontend only
-
 npm run lint:frontend
 npm run format:frontend
 
 # Backend only
-
 npm run lint:backend
 npm run format:backend
 ```
@@ -72,6 +69,32 @@ To check if your frontend code is formatted correctly (without writing changes):
 ```bash
 npm run check-format
 ```
+
+> Prettier is configured to:
+>
+> - Automatically sort **import statements**
+> - Automatically sort **Tailwind CSS classes**
+> - Use plugins: `@ianvs/prettier-plugin-sort-imports` and `prettier-plugin-tailwindcss`
+
+> Tailwind class merging is handled by [`tailwind-merge`](https://github.com/dcastil/twmerge), so dynamic class overrides stay clean and conflict-free.
+
+> Prettier configuration can be found in `frontend/prettier.config.js` or within `frontend/package.json`.
+
+---
+
+### 📘 Storybook (Component Previews)
+
+We use [Storybook](https://storybook.js.org/) to build and document components in isolation.
+
+To start Storybook locally:
+
+```bash
+npm run storybook
+```
+
+Then visit: [http://localhost:6006](http://localhost:6006)
+
+Use this during development to preview components and check for visual or logic regressions.
 
 ---
 
@@ -148,6 +171,7 @@ This will concurrently start:
 - [ ] Vite server (`npm run dev`) starts successfully
 - [ ] Access Rails API at `http://localhost:3000`
 - [ ] Access React frontend at `http://localhost:5173`
+- [ ] Storybook accessible at `http://localhost:6006`
 
 ---
 
@@ -157,13 +181,13 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/) for a cle
 
 **Commit messages should:**
 
-- Use the imperative, present tense (e.g., `add x to y`, not `added x to y`).
-- Begin with a type prefix: `feat:`, `fix:` or `chore:`.
+- Use the imperative, present tense (e.g., `add x to y`, not `added x to y`)
+- Begin with a type prefix: `feat:`, `fix:`, or `chore:`
 
 **Pull request conventions:**
 
-- **Title:** Must match your commit message.
-- **Body:** Include `resolves #<issue-number>` to automatically close the related issue.
+- **Title:** Must match your commit message
+- **Body:** Include `resolves #<issue-number>` to automatically close the related issue
 
 **Example:**
 
@@ -181,6 +205,18 @@ resolves #303
 
 ---
 
+## Automated Releases
+
+This project uses [`semantic-release`](https://semantic-release.gitbook.io/) to automate changelog generation and versioning.
+
+Releases are triggered by Conventional Commits on the `main` branch.
+
+- Version numbers are automatically incremented
+- Changelog entries are generated
+- GitHub releases are published
+
+---
+
 ## Tech Stack
 
 ### Frontend
@@ -188,6 +224,9 @@ resolves #303
 - [Vite](https://vitejs.dev/)
 - [React](https://reactjs.org/)
 - [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [tailwind-merge](https://github.com/dcastil/twmerge)
+- [Storybook](https://storybook.js.org/)
 - [YouTube API](https://developers.google.com/youtube/v3)
 - [Google Login](https://developers.google.com/identity)
 - [Web Audio Recorder](https://github.com/higuma/web-audio-recorder-js)
