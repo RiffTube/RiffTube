@@ -21,8 +21,6 @@ module OmniAuth
         provider: 'google',
         name: 'Joel Hodgeson'
       )
-      puts 'wut'
-      puts user.inspect
       OmniAuth.config.mock_auth[:google_oauth2] = AuthHash.new(
         {
           provider: 'google',
@@ -42,16 +40,6 @@ module OmniAuth
       # Find user and assert session id
       user = User.find_by(email: 'joel@example.com')
       assert_equal session[:user_id], user.id
-
-      # The following could be a sanity check, but may just be unecessary
-
-      # This should return the current user
-      # get '/api/v1/me' # Or: response.header['Location']
-
-      # assert_response :ok
-
-      # json = JSON.parse(response.body)
-      # assert_equal session[:user_id], json['user']['id']
     end
 
     # Assert that failure redirects

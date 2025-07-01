@@ -20,4 +20,3 @@ Rails.application.config.middleware.use OmniAuth::Builder do
 end
 OmniAuth.config.allowed_request_methods = %i[get]
 OmniAuth.config.logger = Rails.logger
-# OmniAuth.config.full_host = Rails.env.production? ? 'https://domain.com' : 'http://localhost:3000'

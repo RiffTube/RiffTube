@@ -4,8 +4,8 @@ Rails.application.routes.draw do
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
       # ─── USERS ────────────────────────────────────────────
-      post 'signup', to: 'users#signup'    # POST   /api/v1/signup
-      get  'me',     to: 'users#me'        # GET    /api/v1/me
+      post 'signup', to: 'users#signup',  as: :signup     # POST   /api/v1/signup
+      get  'me',     to: 'users#me',      as: :dashboard  # GET    /api/v1/me
 
       # ─── SESSIONS ─────────────────────────────────────────
       post   'login',  to: 'sessions#create'   # POST   /api/v1/login
