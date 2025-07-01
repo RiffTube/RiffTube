@@ -1,7 +1,7 @@
 import Layout from '../../Layout';
+import FAQSection from './components/FAQSection/FAQSection';
 import HeroSection from './components/HeroSection/HeroSection';
 import HowItWorksSection from './components/HowItWorksSection/HowItWorksSection';
-import FAQSection from './components/FAQSection/FAQSection';
 
 function LandingPage() {
   return (

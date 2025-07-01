@@ -1,7 +1,7 @@
-import Card from '../Card';
-import TvIcon from '@/assets/rifftube-logo.svg?react';
 import MicIcon from '@/assets/microphone.svg?react';
+import TvIcon from '@/assets/rifftube-logo.svg?react';
 import ShareIcon from '@/assets/share-icon.svg?react';
+import Card from '../Card';
 
 function HowItWorksSection() {
   const steps = [
@@ -27,13 +27,13 @@ function HowItWorksSection() {
   ];
 
   return (
-    <section className="bg-popcorn-butter text-black py-16">
-      <div className="container max-w-screen-2xl mx-auto px-4 py-4">
-        <h2 className="text-4xl md:text-6xl font-['Limelight',cursive]  font-bold text-center mb-12">
+    <section className="bg-popcorn-butter py-16 text-black">
+      <div className="container mx-auto max-w-screen-2xl px-4 py-4">
+        <h2 className="mb-12 text-center font-['Limelight',cursive] text-4xl font-bold md:text-6xl">
           How It Works
         </h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {steps.map(step => (
             <Card
               key={step.number}

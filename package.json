@@ -5,9 +5,11 @@
   "scripts": {
     "dev": "concurrently \"cd backend && rails s\" \"cd frontend && npm run dev\"",
     "release": "semantic-release",
-    "check-format": "cd frontend && npm run check-format",
+    "check-format": "npm exec --prefix frontend prettier --check .",
+    "storybook": "cd frontend && npm run storybook",
+    "build:storybook": "cd frontend && npm run build-storybook",
     "lint:frontend": "cd frontend && npm run lint",
-    "format:frontend": "cd frontend && npm run format",
+    "format:frontend": "npm exec --prefix frontend prettier --write .",
     "lint:backend": "cd backend && bundle exec rubocop",
     "format:backend": "cd backend && bundle exec rubocop -A",
     "install:frontend": "cd frontend && npm install",
@@ -18,12 +20,15 @@
     "test": "cd frontend && npm test"
   },
   "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.2",
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^11.0.1",
     "@semantic-release/release-notes-generator": "^14.0.3",
     "concurrently": "^8.2.2",
     "conventional-changelog-conventionalcommits": "^8.0.0",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.12",
     "semantic-release": "^24.2.3"
   }
 }

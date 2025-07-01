@@ -30,11 +30,8 @@ const faqs = [
 function FAQSection() {
   return (
     <section className="bg-vintage-teal py-20 text-white">
-      <div className="container max-w-screen-2xl mx-auto  px-4">
-        <h2
-          className="mb-10 text-center text-4xl md:text-6xl
-    font-['Limelight',cursive] "
-        >
+      <div className="container mx-auto max-w-screen-2xl px-4">
+        <h2 className="mb-10 text-center font-['Limelight',cursive] text-4xl md:text-6xl">
           FAQ
         </h2>
 

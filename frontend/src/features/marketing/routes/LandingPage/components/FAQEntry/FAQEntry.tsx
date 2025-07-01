@@ -23,7 +23,7 @@ function FAQEntry({
             <dt>
               <DisclosureButton
                 as="button"
-                className="flex w-full items-center justify-between text-left rounded-lg bg-vintage-teal-dark p-6"
+                className="flex w-full items-center justify-between rounded-lg bg-vintage-teal-dark p-6 text-left"
                 aria-label={`Toggle answer for: ${question}`}
               >
                 <span className="text-lg font-semibold">{question}</span>
