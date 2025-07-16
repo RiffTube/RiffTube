@@ -23,7 +23,7 @@ function YouTubePlayer({ videoId, onTime }: Props) {
       videoId={videoId}
       className="h-full w-full"
       onReady={e => (playerRef.current = e.target)}
-      opts={{ width: '100%', height: '100%', playerVars: { autoplay: 1 } }}
+      opts={{ width: '100%', height: '100%' }}
     />
   );
 }

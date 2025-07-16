@@ -1,82 +1,66 @@
-import { useEffect, useState } from 'react';
+import Button from '@/components/Button'; // if you have a shared Button; else keep <button>
+import TextInput from '@/components/TextInput';
 import type { DummyRiff } from '../../../../data/dummyRiffs';
 
 interface Props {
   riff: DummyRiff | null;
+  onChange: (updated: DummyRiff) => void;
   onSave?: (changes: Partial<DummyRiff>) => void;
+  onUndo: () => void;
 }
 
-export default function RiffControls({ riff, onSave }: Props) {
-  /* local draft state */
-  const [title, setTitle] = useState('');
-  const [duration, setDuration] = useState('');
+export default function RiffControls({
+  riff,
+  onChange,
+  onSave,
+  onUndo,
+}: Props) {
+  // If no riff is selected yet, just return null / skeleton
+  if (!riff) return null;
 
-  /* sync whenever a new riff is selected */
-  useEffect(() => {
-    if (!riff) return;
-    setTitle(riff.title);
-    setDuration(riff.duration.toString());
-  }, [riff]);
+  /** handlers write directly to parent draft */
+  const handleTitle = (e: React.ChangeEvent<HTMLInputElement>) =>
+    onChange({ ...riff, title: e.target.value });
 
-  /* revert local edits */
-  const handleUndo = () => {
-    if (!riff) return;
-    setTitle(riff.title);
-    setDuration(riff.duration.toString());
-  };
-
-  /* save (bubble up) */
-  const handleSave = () => {
-    if (!riff) return;
-    onSave?.({
-      id: riff.id,
-      title,
-      duration: Number(duration),
-    });
-  };
+  /** Save delegates to parent + backend */
+  const handleSave = () =>
+    onSave?.({ id: riff.id, title: riff.title, duration: riff.duration });
 
   return (
-    <div className="flex flex-wrap items-end gap-4">
-      {/* Title field */}
-      <div className="flex flex-col">
-        <label className="mb-1 text-xs">Name</label>
-        <input
-          type="text"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          className="w-56 rounded bg-gray-800 px-3 py-2"
-          placeholder="Riff title"
-        />
-      </div>
+    <div className="flex flex-wrap items-end gap-6">
+      {/* Name field */}
+      <TextInput
+        id="riff-name"
+        label="Name"
+        value={riff.title}
+        onChange={handleTitle}
+        placeholder="Riff title"
+        required
+        className="w-56"
+      />
 
-      {/* Duration field */}
-      <div className="flex flex-col">
-        <label className="mb-1 text-xs">Duration&nbsp;(s)</label>
-        <input
-          type="number"
-          min="1"
-          value={duration}
-          onChange={e => setDuration(e.target.value)}
-          className="w-24 rounded bg-gray-800 px-3 py-2"
-        />
-      </div>
+      {/* Duration field (read‑only) */}
+      <TextInput
+        id="riff-duration"
+        label="Duration (s)"
+        value={String(riff.duration)}
+        readOnly
+        size="sm"
+        className="w-24 cursor-default text-center"
+      />
 
-      {/* Spacer pushes buttons right on wide screens */}
+      {/* push buttons to the right */}
       <div className="flex-1" />
 
-      {/* Action buttons */}
-      <button
-        onClick={handleUndo}
-        className="rounded bg-gray-700 px-4 py-2 transition hover:bg-gray-600"
-      >
+      {/* Undo */}
+      <Button variant="secondary" onClick={onUndo}>
         Undo changes
-      </button>
-      <button
-        onClick={handleSave}
-        className="rounded bg-white px-4 py-2 text-black transition hover:bg-gray-200"
-      >
+      </Button>
+
+      {/* Save */}
+      <Button variant="primary" onClick={handleSave}>
         Save
-      </button>
+      </Button>
     </div>
   );
 }

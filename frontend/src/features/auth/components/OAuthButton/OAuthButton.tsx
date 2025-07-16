@@ -1,6 +1,6 @@
 import { twMerge } from 'tailwind-merge';
 import GoogleLogo from '@/assets/google.svg?react';
-import CTAButton, { CTAButtonProps } from '@/components/CTAButton';
+import CTAButton, { CTAButtonProps } from '@/components/Button';
 
 export type OAuthProvider = 'google'; // later could include: | 'github' | 'apple'
 

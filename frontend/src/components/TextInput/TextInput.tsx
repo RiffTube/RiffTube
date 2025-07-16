@@ -1,5 +1,7 @@
-import React, { forwardRef, useRef, useState } from 'react';
+import { forwardRef, useRef, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 
+export type Size = 'sm' | 'md' | 'lg';
 export type TextInputProps = {
   id: string;
   label: string;
@@ -13,6 +15,17 @@ export type TextInputProps = {
   errorMessage?: string;
   infoMessage?: string;
   forceShowError?: boolean;
+  className?: string;
+  size?: Size;
+  disabled?: boolean;
+  isLoading?: boolean;
+  readOnly?: boolean;
+};
+
+const sizeClassesMap: Record<Size, string> = {
+  sm: 'text-sm px-3 pt-4 pb-2',
+  md: 'text-base px-4 pt-6 pb-3',
+  lg: 'text-lg px-5 pt-7 pb-4',
 };
 
 function TextInput(
@@ -29,6 +42,11 @@ function TextInput(
     errorMessage,
     infoMessage,
     forceShowError = false,
+    className = '',
+    size = 'md',
+    disabled = false,
+    isLoading = false,
+    readOnly = false,
   }: TextInputProps,
   ref: React.Ref<HTMLInputElement>,
 ) {
@@ -42,7 +60,6 @@ function TextInput(
     ? !inputRef.current.validity.valid
     : false;
 
-  // Only show errors after the user has blurred the field (touched) … unless forced.
   const shouldShow = forceShowError || touched;
 
   const showError = shouldShow && (Boolean(errorMessage) || nativeInvalid);
@@ -50,12 +67,20 @@ function TextInput(
 
   const describedBy = showError ? `${id}-error` : undefined;
 
+  const labelClasses =
+    'pointer-events-none absolute top-2 left-4 text-xs font-medium text-silver-dust';
+
+  const inputClasses = twMerge(
+    'peer block w-full rounded-2xl border-2 border-smoke bg-transparent placeholder-gray-600 transition focus:border-silver-dust focus:ring-4 focus:ring-silver-dust/50 focus:outline-none invalid:focus:border-red-500 invalid:focus:ring-red-500/50 disabled:cursor-not-allowed disabled:bg-[#333333] disabled:text-[#aaaaaa] disabled:opacity-40',
+    readOnly ? 'border-0 border-none cursor-default focus:ring-0 ' : '',
+    sizeClassesMap[size],
+
+    className,
+  );
+
   return (
     <div className="relative">
-      <label
-        htmlFor={id}
-        className="pointer-events-none absolute top-2 left-4 text-xs font-medium text-silver-dust"
-      >
+      <label htmlFor={id} className={labelClasses}>
         {label}
         {required && ' *'}
       </label>
@@ -78,7 +103,9 @@ function TextInput(
         }}
         aria-invalid={showError}
         aria-describedby={describedBy}
-        className="peer block w-full rounded-2xl border-2 border-smoke bg-transparent px-4 pt-6 pb-3 text-white placeholder-gray-600 transition focus:border-silver-dust focus:ring-4 focus:ring-silver-dust/50 focus:outline-none invalid:focus:border-red-500 invalid:focus:ring-red-500/50"
+        className={inputClasses}
+        disabled={disabled || isLoading}
+        readOnly={readOnly}
       />
 
       <div className="mt-1 ml-1 h-5">

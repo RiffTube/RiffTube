@@ -3,12 +3,10 @@ import type { DummyRiff } from '../../../../data/dummyRiffs';
 
 interface Props {
   riff: DummyRiff | null;
-  /** Optional callback so parent can persist changes later */
   onChange?: (updated: Partial<DummyRiff>) => void;
 }
 
-export default function AnnotationForm({ riff, onChange }: Props) {
-  /* local editable fields */
+function AnnotationForm({ riff, onChange }: Props) {
   const [text, setText] = useState('');
   const [bgColor, setBgColor] = useState('#000000');
   const [textColor, setTextColor] = useState('#ffffff');
@@ -38,7 +36,7 @@ export default function AnnotationForm({ riff, onChange }: Props) {
   }, [text, duration, onChange]);
 
   return (
-    <section className="space-y-4 rounded-lg bg-gray-800 p-4">
+    <section className="space-y-4 rounded-lg bg-transparent p-4">
       <h3 className="font-medium">Add an annotation</h3>
 
       {/* Text textarea */}
@@ -47,7 +45,7 @@ export default function AnnotationForm({ riff, onChange }: Props) {
         value={text}
         onChange={e => setText(e.target.value)}
         placeholder="Type riff text that will appear over the video…"
-        className="w-full max-w-full resize-none rounded bg-gray-900 p-2 text-sm xl:text-base"
+        className="w-full max-w-full resize-none rounded-lg border-2 border-smoke bg-transparent p-2 text-sm xl:text-base"
       />
 
       {/* Style + duration inputs */}
@@ -99,3 +97,5 @@ export default function AnnotationForm({ riff, onChange }: Props) {
     </section>
   );
 }
+
+export default AnnotationForm;

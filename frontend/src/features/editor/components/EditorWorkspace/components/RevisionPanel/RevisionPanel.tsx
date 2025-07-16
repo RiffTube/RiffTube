@@ -1,26 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-interface Revision {
+export interface Revision {
   id: string;
   label: string;
 }
 
-/** Dummy revisions until the backend is wired */
-const dummyRevisions: Revision[] = [
-  { id: 'current', label: 'Current' },
-  { id: 'rev1', label: 'Today, 11:02 AM' },
-  { id: 'rev2', label: 'Today, 11:01 AM' },
-];
-
 interface Props {
-  /** optional callback when a revision is selected */
+  /** The riff whose revisions you want to show */
+  riff: { id: string; revisions?: Revision[] } | null;
+  /** Optional callback when a revision is selected */
   onSelect?: (revisionId: string) => void;
 }
 
-export default function RevisionPanel({ onSelect }: Props) {
-  const [selected, setSelected] = useState<string>('current');
+function RevisionPanel({ riff, onSelect }: Props) {
+  /* Reset the selected radio when the riff changes */
+  const [selected, setSelected] = useState('current');
+  useEffect(() => setSelected('current'), [riff?.id]);
 
-  const revisions = dummyRevisions; // replace with riff?.revisions later
+  /* Fall back to a single "Current" entry if the riff has no revisions yet */
+  const revisions: Revision[] = riff?.revisions?.length
+    ? [{ id: 'current', label: 'Current' }, ...riff.revisions]
+    : [{ id: 'current', label: 'Current' }];
 
   const handleChange = (id: string) => {
     setSelected(id);
@@ -45,7 +45,7 @@ export default function RevisionPanel({ onSelect }: Props) {
           >
             <input
               type="radio"
-              name="revision"
+              name={`revision-${riff?.id ?? 'none'}`}
               checked={selected === rev.id}
               onChange={() => handleChange(rev.id)}
               className="accent-blue-500"
@@ -57,3 +57,5 @@ export default function RevisionPanel({ onSelect }: Props) {
     </details>
   );
 }
+
+export default RevisionPanel;

@@ -1,3 +1,5 @@
+import Logo from '@/components/Logo';
+
 export interface SidebarRiff {
   id: string;
   title: string;
@@ -24,9 +26,8 @@ function secondsToTimestamp(secs: number) {
 
 function RiffSidebar({ riffs, selectedId, onSelect }: Props) {
   return (
-    <aside className="hidden w-64 space-y-4 overflow-y-auto border-r border-gray-700 p-4 xl:block">
-      <h2 className="text-xl font-semibold">Riffs in this video</h2>
-
+    <aside className="hidden w-64 space-y-4 overflow-y-auto p-4 xl:block">
+      <Logo size="md" />
       <ul className="space-y-2">
         {riffs.map(r => {
           const isActive = r.id === selectedId;
@@ -34,7 +35,9 @@ function RiffSidebar({ riffs, selectedId, onSelect }: Props) {
             <li
               key={r.id}
               onClick={() => onSelect(r.id)}
-              className={`flex cursor-pointer items-center rounded p-2 transition ${isActive ? 'bg-gray-700' : 'bg-gray-800 hover:bg-gray-700'}`}
+              className={`flex cursor-pointer items-center gap-2 rounded-2xl border-2 p-2 transition-colors ${
+                isActive ? 'border-white' : 'border-transparent'
+              }`}
             >
               <img
                 src={r.thumbnail}

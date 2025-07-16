@@ -1,4 +1,4 @@
-import { dummyRiffs } from '../../data/dummyRiffs';
+import { useEffect, useState } from 'react';
 import type { DummyRiff } from '../../data/dummyRiffs';
 import AnnotationForm from './components/AnnotationForm';
 import AudioPanel from './components/AudioPanel';
@@ -7,33 +7,93 @@ import RiffControls from './components/RiffControls';
 import VideoCard from './components/VideoCard';
 
 interface Props {
-  /** The id of the riff selected in the sidebar */
-  selectedId: string | null;
+  selectedId: string | null; // chosen in sidebar
+  riffs: DummyRiff[]; // authoritative list
+  setRiffs: React.Dispatch<React.SetStateAction<DummyRiff[]>>;
 }
 
-function EditorWorkspace({ selectedId }: Props) {
-  // find the currently selected riff (null if none)
-  const selectedRiff: DummyRiff | null =
-    dummyRiffs.find(r => r.id === selectedId) ?? null;
+function EditorWorkspace({ selectedId, riffs, setRiffs }: Props) {
+  /** last saved */
+  const [original, setOriginal] = useState<DummyRiff | null>(
+    () => riffs.find(r => r.id === selectedId) ?? null,
+  );
+  /** current draft */
+  const [draft, setDraft] = useState<DummyRiff | null>(original);
 
+  useEffect(() => {
+    const next = riffs.find(r => r.id === selectedId) ?? null;
+    setOriginal(next);
+    setDraft(next);
+  }, [selectedId, riffs]);
+
+  const handleSave = (changes: Partial<DummyRiff>) => {
+    if (!draft) return;
+    const updated = { ...draft, ...changes };
+
+    setOriginal(updated);
+    setDraft(updated);
+
+    setRiffs(prev => prev.map(r => (r.id === updated.id ? updated : r)));
+
+    // TODO: call backend API here
+    console.log('💾 saved to backend (stub):', updated);
+  };
+
+  const handleUndo = () => {
+    setDraft(original); // revert to last saved
+  };
+
+  const handleRevisionSelect = async (revisionId: string) => {
+    if (!original) return;
+
+    /* 1️⃣ User chose the live version */
+    if (revisionId === 'current') {
+      setDraft(original);
+      return;
+    }
+
+    console.log(`🔄 loading revision ${revisionId} for riff ${original.id}`);
+
+    const simulatedRevision: DummyRiff = {
+      ...original,
+      title: `${original.title} (rev ${revisionId})`,
+      text: original.text
+        ? `${original.text} [loaded ${revisionId}]`
+        : undefined,
+    };
+
+    setDraft(simulatedRevision);
+  };
   return (
     <main className="flex min-w-0 flex-1 flex-col p-6">
+      {/* Video ───────── */}
       <div className="mb-6">
-        {/* 1. Video player with overlay */}
-        <VideoCard riffs={dummyRiffs} selectedId={selectedId} />
+        <VideoCard riffs={riffs} selectedId={selectedId} />
       </div>
+
+      {/* Editor panels (scrollable) */}
       <div className="min-w-0 flex-1 space-y-8 overflow-x-hidden overflow-y-auto pr-2 md:pr-4">
-        {/* 2. Basic controls (name, duration, save/undo) */}
-        <RiffControls riff={selectedRiff} />
+        {draft && (
+          <>
+            <RiffControls
+              riff={draft}
+              onChange={setDraft}
+              onSave={handleSave}
+              onUndo={handleUndo}
+            />
 
-        {/* 3. Audio recording panel */}
-        <AudioPanel riff={selectedRiff} />
+            <AudioPanel />
 
-        {/* 4. Annotation (text, style) editor */}
-        <AnnotationForm riff={selectedRiff} />
+            <AnnotationForm
+              riff={draft}
+              onChange={updated =>
+                setDraft(prev => (prev ? { ...prev, ...updated } : prev))
+              }
+            />
 
-        {/* 5. Revision history / advanced */}
-        <RevisionPanel />
+            <RevisionPanel riff={draft} onSelect={handleRevisionSelect} />
+          </>
+        )}
       </div>
     </main>
   );

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Play } from 'lucide-react';
-import CTAButton from './CTAButton';
+import Button from './Button';
 
-const meta: Meta<typeof CTAButton> = {
-  title: 'Components/CTAButton',
-  component: CTAButton,
+const meta: Meta<typeof Button> = {
+  title: 'Components/Button',
+  component: Button,
   argTypes: {
     variant: {
       control: { type: 'radio' },
@@ -28,7 +28,7 @@ const meta: Meta<typeof CTAButton> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof CTAButton>;
+type Story = StoryObj<typeof Button>;
 
 export const Primary: Story = {};
 

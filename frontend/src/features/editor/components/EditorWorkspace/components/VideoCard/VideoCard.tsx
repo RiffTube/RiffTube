@@ -29,7 +29,7 @@ export default function VideoCard({
   }));
 
   return (
-    <div className="relative aspect-video h-[35vh] w-full overflow-hidden rounded-lg bg-black shadow-lg lg:h-[55vh]">
+    <div className="relative aspect-video max-h-[40vh] w-full overflow-hidden rounded-lg bg-black shadow-lg sm:max-h-[50vh] md:max-h-[60vh] lg:max-h-[60vh]">
       {/* — YouTube player — */}
       <YouTubePlayer videoId={videoId} onTime={setCurrentTime} />
 
