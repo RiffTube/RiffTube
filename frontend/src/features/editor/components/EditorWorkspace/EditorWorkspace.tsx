@@ -33,8 +33,8 @@ function EditorWorkspace({ selectedId, riffs, setRiffs }: Props) {
     setOriginal(updated);
     setDraft(updated);
 
-    setRiffs(prev => prev.map(r => (r.id === updated.id ? updated : r)));
-
+    const newRiffs = riffs.map(r => (r.id === updated.id ? updated : r));
+    setRiffs(newRiffs);
     // TODO: call backend API here
     console.log('💾 saved to backend (stub):', updated);
   };
