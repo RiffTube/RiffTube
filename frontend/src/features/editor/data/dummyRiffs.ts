@@ -1,7 +1,3 @@
-// src/features/projects/data/dummyRiffs.ts
-
-/* ───────── Types ───────── */
-
 export interface Revision {
   id: string; // backend will map to riff_versions.id
   label: string; // human‑readable (e.g. timestamp or “v2”)
