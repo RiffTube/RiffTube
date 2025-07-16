@@ -2,7 +2,7 @@ export type DividerWithTextProps = {
   children: React.ReactNode;
 };
 
-export function DividerWithText({ children }: DividerWithTextProps) {
+function DividerWithText({ children }: DividerWithTextProps) {
   return (
     <div className="my-6 flex items-center">
       <hr className="flex-grow border-gray-600" />
