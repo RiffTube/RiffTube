@@ -1,48 +1,51 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import Modal from './Modal';
 
 describe('Modal component', () => {
-  it('renders children when open', () => {
-    const onClose = vi.fn();
+  it('renders children when open', async () => {
     render(
-      <Modal isOpen={true} onClose={onClose}>
+      <Modal isOpen onClose={vi.fn()} className="custom-class">
         <div>Test Content</div>
       </Modal>,
     );
-    expect(screen.getByText('Test Content')).toBeInTheDocument();
+
+    // findBy waits for mount/transition to settle
+    expect(await screen.findByText('Test Content')).toBeInTheDocument();
   });
 
   it('does not render when closed', () => {
-    const onClose = vi.fn();
     render(
-      <Modal isOpen={false} onClose={onClose}>
+      <Modal isOpen={false} onClose={vi.fn()}>
         <div>Test Content</div>
       </Modal>,
     );
-    expect(screen.queryByText('Test Content')).not.toBeInTheDocument();
+
+    expect(screen.queryByText('Test Content')).toBeNull();
   });
 
-  it('calls onClose when Escape key is pressed', () => {
+  it('calls onClose when Escape key is pressed', async () => {
     const onClose = vi.fn();
+
     render(
-      <Modal isOpen={true} onClose={onClose}>
+      <Modal isOpen onClose={onClose}>
         <div>Test Content</div>
       </Modal>,
     );
-    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+
+    await userEvent.keyboard('{Escape}'); // wrapped in act internally
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('forwards custom className to the panel', () => {
-    const onClose = vi.fn();
+  it('forwards custom className to the panel', async () => {
     render(
-      <Modal isOpen={true} onClose={onClose} className="custom-class">
+      <Modal isOpen onClose={vi.fn()} className="custom-class">
         <div>Test Content</div>
       </Modal>,
     );
 
-    const panel = screen.getByText('Test Content').parentElement;
-    expect(panel).toHaveClass('custom-class');
+    const panel = await screen.findByText('Test Content');
+    expect(panel.parentElement).toHaveClass('custom-class');
   });
 });

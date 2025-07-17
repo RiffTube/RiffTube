@@ -17,7 +17,7 @@ function FAQEntry({
 }: FAQItem & { isAccordion: boolean }) {
   if (isAccordion) {
     return (
-      <Disclosure>
+      <Disclosure as="div">
         {({ open }) => (
           <>
             <dt>

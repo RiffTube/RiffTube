@@ -4,8 +4,7 @@ import { twMerge } from 'tailwind-merge';
 export type Variant = 'primary' | 'secondary' | 'lightMode';
 export type Size = 'sm' | 'md' | 'lg';
 
-export interface CTAButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
   /** Visual style */
   variant?: Variant;
@@ -27,12 +26,16 @@ const variantMap: Record<Variant, string> = {
   primary:
     'bg-primary text-white hover:bg-primary/80 disabled:bg-primary/40 ' +
     'focus:outline-none focus:ring-2 focus:ring-primary/50',
+
   secondary:
-    'bg-gray-700 text-white hover:bg-gray-600 disabled:bg-gray-600/50 ' +
-    'focus:outline-none focus:ring-2 focus:ring-gray-200',
+    'bg-reel-dust text-white hover:bg-[#3a3a39] ' +
+    'disabled:bg-[#333332] disabled:text-[#aaaaaa] disabled:opacity-40 disabled:cursor-not-allowed ' +
+    'focus:outline-none focus:ring-2 focus:ring-reel-dust/50',
   lightMode:
-    'bg-white text-gray-900 hover:bg-gray-50 disabled:bg-gray-200 ' +
-    'focus:outline-none focus:ring-2 focus:ring-gray-200',
+    'bg-white text-gray-900 hover:bg-gray-50 ' +
+    'disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed ' +
+    'focus:outline-none focus:ring-2 focus:ring-gray-200 ' +
+    'transition-colors duration-150',
 };
 
 const sizeMap: Record<Size, string> = {
@@ -41,7 +44,7 @@ const sizeMap: Record<Size, string> = {
   lg: 'h-14 px-6 text-lg',
 };
 
-function CTAButton({
+function Button({
   children,
   variant = 'primary',
   size = 'md',
@@ -51,7 +54,7 @@ function CTAButton({
   ariaLabel,
   className = '',
   ...rest
-}: CTAButtonProps) {
+}: ButtonProps) {
   const activeClasses =
     !disabled && !isLoading ? 'active:opacity-75 active:scale-95' : '';
 
@@ -101,4 +104,4 @@ function CTAButton({
   );
 }
 
-export default CTAButton;
+export default Button;
