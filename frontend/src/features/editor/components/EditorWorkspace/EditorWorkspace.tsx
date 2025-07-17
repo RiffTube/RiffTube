@@ -8,17 +8,16 @@ import RiffControls from './components/RiffControls';
 import VideoCard from './components/VideoCard';
 
 interface Props {
-  selectedId: string | null; // chosen in sidebar
-  riffs: DummyRiff[]; // authoritative list
+  selectedId: string | null;
+  riffs: DummyRiff[];
   setRiffs: React.Dispatch<React.SetStateAction<DummyRiff[]>>;
 }
 
 function EditorWorkspace({ selectedId, riffs, setRiffs }: Props) {
-  /** last saved */
   const [original, setOriginal] = useState<DummyRiff | null>(
     () => riffs.find(r => r.id === selectedId) ?? null,
   );
-  /** current draft */
+
   const [draft, setDraft] = useState<DummyRiff | null>(original);
 
   useEffect(() => {
@@ -37,23 +36,30 @@ function EditorWorkspace({ selectedId, riffs, setRiffs }: Props) {
     const newRiffs = riffs.map(r => (r.id === updated.id ? updated : r));
     setRiffs(newRiffs);
 
-    console.log('💾 saved to backend (stub):', updated);
+    // TODO: hook this up to our PATCH /api/riffs/:id endpoint
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('[DEV] riff saved:', updated);
+    }
   };
 
   const handleUndo = () => {
-    setDraft(original); // revert to last saved
+    setDraft(original);
   };
 
   const handleRevisionSelect = async (revisionId: string) => {
     if (!original) return;
 
-    /* 1️⃣ User chose the live version */
     if (revisionId === 'current') {
       setDraft(original);
       return;
     }
 
-    console.log(`🔄 loading revision ${revisionId} for riff ${original.id}`);
+    // TODO: actually fetch this from /api…
+    if (process.env.NODE_ENV === 'development') {
+      console.debug(
+        `[DEV] would load revision ${revisionId} for riff ${original.id}`,
+      );
+    }
 
     const simulatedRevision: DummyRiff = {
       ...original,

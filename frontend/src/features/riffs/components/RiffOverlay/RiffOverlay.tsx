@@ -12,7 +12,6 @@ interface Props {
 const epsilon = 0.25; // quarters of a second
 
 function RiffOverlay({ riffs, currentTime }: Props) {
-  console.log(riffs, 'riffs');
   return (
     <div className="pointer-events-none absolute bottom-10 w-full text-center">
       {riffs

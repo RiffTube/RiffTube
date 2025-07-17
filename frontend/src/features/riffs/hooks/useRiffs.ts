@@ -9,7 +9,7 @@ function useRiffs(projectId: string): Riff[] {
     if (!projectId) return;
     fetchRiffsForProject(projectId)
       .then(data => setRiffs(data.riffs))
-      .catch(console.error);
+      .catch(error => console.error(error));
   }, [projectId]);
 
   return riffs;
