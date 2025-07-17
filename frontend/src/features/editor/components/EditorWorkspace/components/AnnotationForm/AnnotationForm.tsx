@@ -31,7 +31,6 @@ function AnnotationForm({ riff, onChange }: Props) {
     return () => clearTimeout(id);
   }, [text, duration, onChange]);
 
-  /* ─── UI ───────────────────────────────────────────────────────────────── */
   return (
     <section className="space-y-4 rounded-lg bg-transparent p-4">
       <h3 className="font-medium">Add an annotation</h3>
@@ -79,7 +78,14 @@ function AnnotationForm({ riff, onChange }: Props) {
             type="number"
             min={1}
             value={duration}
-            onChange={e => setDuration(e.target.value.replace(/\D/g, ''))}
+            onChange={e => {
+              const value = parseInt(e.target.value, 10);
+              if (!isNaN(value) && value >= 1 && value <= 3600) {
+                setDuration(String(value));
+              } else {
+                setDuration('1'); // Default to 1 second if invalid
+              }
+            }}
             className="w-24 rounded bg-gray-900 p-2 text-center"
           />
         </div>

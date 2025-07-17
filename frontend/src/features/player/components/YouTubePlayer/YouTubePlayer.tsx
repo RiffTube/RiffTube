@@ -6,6 +6,7 @@ interface Props {
   onTime: (t: number) => void;
 }
 
+const POLLING_INTERVAL_MS = 250; // poll the player every 250ms i.e. 4 times per second
 function YouTubePlayer({ videoId, onTime }: Props) {
   const playerRef = useRef<YT | null>(null);
 
@@ -14,7 +15,7 @@ function YouTubePlayer({ videoId, onTime }: Props) {
       if (playerRef.current) {
         onTime(playerRef.current.getCurrentTime());
       }
-    }, 250);
+    }, POLLING_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [onTime]);
 
