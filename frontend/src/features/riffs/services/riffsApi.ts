@@ -10,7 +10,10 @@ export async function fetchRiffsForProject(
   const res = await fetch(`/api/v1/projects/${projectId}/riffs`, {
     credentials: 'include',
   });
-  if (!res.ok) throw new Error('Failed to load riffs');
+  if (!res.ok)
+    throw new Error(
+      `Failed to load riffs for project ${projectId}: ${res.status}`,
+    );
   const data = (await res.json()) as FetchRiffsResponse;
   return data;
 }
