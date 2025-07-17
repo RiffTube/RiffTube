@@ -18,11 +18,11 @@ export interface DummyRiff {
 export const dummyRiffs: DummyRiff[] = [
   {
     id: 'r1',
-    title: 'Bat dog ears joke',
+    title: 'wait',
     thumbnail: 'https://picsum.photos/id/237/200',
-    start: 23.34,
-    duration: 12,
-    text: 'A funny joke about bat dogs',
+    start: 5,
+    duration: 4,
+    text: 'Wait for it...',
     revisions: [
       { id: 'rev1', label: 'Mar 12, 11:02 AM' },
       { id: 'rev2', label: 'Mar 12, 11:01 AM' },
@@ -30,11 +30,11 @@ export const dummyRiffs: DummyRiff[] = [
   },
   {
     id: 'r2',
-    title: 'Legs',
+    title: 'Classic',
     thumbnail: 'https://picsum.photos/id/238/200',
-    start: 24.0,
-    duration: 2,
-    text: 'A riff about legs',
+    start: 18,
+    duration: 7,
+    text: '😂 Classic!',
     revisions: [{ id: 'rev1', label: 'Mar 1, 09:45 AM' }],
   },
 ];
