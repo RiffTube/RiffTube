@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { isEqual } from 'lodash';
 import type { DummyRiff } from '../../data/dummyRiffs';
 import AnnotationForm from './components/AnnotationForm';
 import AudioPanel from './components/AudioPanel';
@@ -35,7 +36,7 @@ function EditorWorkspace({ selectedId, riffs, setRiffs }: Props) {
 
     const newRiffs = riffs.map(r => (r.id === updated.id ? updated : r));
     setRiffs(newRiffs);
-    // TODO: call backend API here
+
     console.log('💾 saved to backend (stub):', updated);
   };
 
@@ -64,9 +65,20 @@ function EditorWorkspace({ selectedId, riffs, setRiffs }: Props) {
 
     setDraft(simulatedRevision);
   };
+
+  const isDirty: boolean =
+    draft !== null &&
+    original !== null &&
+    !isEqual(
+      { title: draft.title, duration: draft.duration, text: draft.text },
+      {
+        title: original.title,
+        duration: original.duration,
+        text: original.text,
+      },
+    );
   return (
     <main className="flex min-w-0 flex-1 flex-col p-6">
-      {/* Video ───────── */}
       <div className="mb-6">
         <VideoCard riffs={riffs} selectedId={selectedId} />
       </div>
@@ -80,6 +92,7 @@ function EditorWorkspace({ selectedId, riffs, setRiffs }: Props) {
               onChange={setDraft}
               onSave={handleSave}
               onUndo={handleUndo}
+              canSave={isDirty}
             />
 
             <AudioPanel />

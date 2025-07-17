@@ -7,14 +7,10 @@ interface Props {
   onChange: (updated: DummyRiff) => void;
   onSave?: (changes: Partial<DummyRiff>) => void;
   onUndo: () => void;
+  canSave: boolean;
 }
 
-export default function RiffControls({
-  riff,
-  onChange,
-  onSave,
-  onUndo,
-}: Props) {
+function RiffControls({ riff, onChange, onSave, onUndo, canSave }: Props) {
   // If no riff is selected yet, just return null / skeleton
   if (!riff) return null;
 
@@ -22,9 +18,12 @@ export default function RiffControls({
   const handleTitle = (e: React.ChangeEvent<HTMLInputElement>) =>
     onChange({ ...riff, title: e.target.value });
 
-  /** Save delegates to parent + backend */
-  const handleSave = () =>
-    onSave?.({ id: riff.id, title: riff.title, duration: riff.duration });
+  const handleSaveClick = () =>
+    onSave?.({
+      id: riff.id,
+      title: riff.title,
+      duration: riff.duration,
+    });
 
   return (
     <div className="flex flex-wrap items-end gap-6">
@@ -45,8 +44,6 @@ export default function RiffControls({
         label="Duration (s)"
         value={String(riff.duration)}
         readOnly
-        size="sm"
-        className="w-24 cursor-default text-center"
       />
 
       {/* push buttons to the right */}
@@ -58,9 +55,15 @@ export default function RiffControls({
       </Button>
 
       {/* Save */}
-      <Button variant="primary" onClick={handleSave}>
+      <Button
+        aria-label={canSave ? 'Save riff' : 'No changes to save'}
+        disabled={!canSave}
+        variant="lightMode"
+        onClick={handleSaveClick}
+      >
         Save
       </Button>
     </div>
   );
 }
+export default RiffControls;

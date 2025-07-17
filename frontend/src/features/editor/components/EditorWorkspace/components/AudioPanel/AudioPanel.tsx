@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Button from '@/components/Button';
 
-export default function AudioPanel() {
+function AudioPanel() {
   // dummy flags; replace later with real recorder status + blob URL
   const [hasAudio, setHasAudio] = useState(false);
 
@@ -31,7 +31,7 @@ export default function AudioPanel() {
       {hasAudio ? (
         <div className="flex gap-4">
           <Button variant="secondary" onClick={handleRecord}>
-            Re‑record
+            Re-record
           </Button>
           <Button variant="lightMode" onClick={handleDelete}>
             Delete
@@ -43,3 +43,5 @@ export default function AudioPanel() {
     </section>
   );
 }
+
+export default AudioPanel;

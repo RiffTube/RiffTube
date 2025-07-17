@@ -2,44 +2,39 @@ import { useEffect, useState } from 'react';
 import type { DummyRiff } from '../../../../data/dummyRiffs';
 
 interface Props {
-  riff: DummyRiff | null;
-  onChange?: (updated: Partial<DummyRiff>) => void;
+  riff: DummyRiff;
+  onChange: (changes: Partial<DummyRiff>) => void;
 }
-
 function AnnotationForm({ riff, onChange }: Props) {
-  const [text, setText] = useState('');
+  const [text, setText] = useState(riff.text ?? '');
   const [bgColor, setBgColor] = useState('#000000');
   const [textColor, setTextColor] = useState('#ffffff');
   const [fontSize, setFontSize] = useState('16');
-  const [duration, setDuration] = useState('8');
+  const [duration, setDuration] = useState(String(riff.duration));
 
-  /* sync initial values whenever riff prop changes */
+  /* Synchronise when the parent selects a different riff */
   useEffect(() => {
-    if (!riff) return;
     setText(riff.text ?? '');
-    // bgColor, textColor, fontSize would come from riff.styling in the future
+    setDuration(String(riff.duration));
+    // bgColor / textColor / fontSize would come from riff.styling later
   }, [riff]);
 
-  /* bubble up changes (debounced) */
   useEffect(() => {
-    if (!onChange) return;
-    const id = setTimeout(
-      () =>
-        onChange({
-          text,
-          duration: Number(duration),
-          // store styling as an object later
-        }),
-      300,
-    );
+    const id = setTimeout(() => {
+      onChange({
+        text,
+        duration: Number(duration),
+        // later: styling: { bgColor, textColor, fontSize: Number(fontSize) }
+      });
+    }, 300);
+
     return () => clearTimeout(id);
   }, [text, duration, onChange]);
 
+  /* ─── UI ───────────────────────────────────────────────────────────────── */
   return (
     <section className="space-y-4 rounded-lg bg-transparent p-4">
       <h3 className="font-medium">Add an annotation</h3>
-
-      {/* Text textarea */}
       <textarea
         rows={4}
         value={text}
@@ -47,8 +42,6 @@ function AnnotationForm({ riff, onChange }: Props) {
         placeholder="Type riff text that will appear over the video…"
         className="w-full max-w-full resize-none rounded-lg border-2 border-smoke bg-transparent p-2 text-sm xl:text-base"
       />
-
-      {/* Style + duration inputs */}
       <div className="flex flex-wrap gap-4">
         <div>
           <label className="mb-1 block text-xs">Background</label>
@@ -59,7 +52,6 @@ function AnnotationForm({ riff, onChange }: Props) {
             className="h-8 w-12 border-0 p-0"
           />
         </div>
-
         <div>
           <label className="mb-1 block text-xs">Text color</label>
           <input
@@ -69,7 +61,6 @@ function AnnotationForm({ riff, onChange }: Props) {
             className="h-8 w-12 border-0 p-0"
           />
         </div>
-
         <div>
           <label className="mb-1 block text-xs">Font size</label>
           <select
@@ -82,15 +73,14 @@ function AnnotationForm({ riff, onChange }: Props) {
             ))}
           </select>
         </div>
-
         <div>
-          <label className="mb-1 block text-xs">Duration (s)</label>
+          <label className="mb-1 block text-xs">Duration&nbsp;(s)</label>
           <input
             type="number"
-            min="1"
+            min={1}
             value={duration}
-            onChange={e => setDuration(e.target.value)}
-            className="w-20 rounded bg-gray-900 p-2"
+            onChange={e => setDuration(e.target.value.replace(/\D/g, ''))}
+            className="w-24 rounded bg-gray-900 p-2 text-center"
           />
         </div>
       </div>
