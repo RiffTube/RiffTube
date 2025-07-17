@@ -1,1 +1,1 @@
-export * from './useRiffs';
+export { default as useRiffs } from './useRiffs';

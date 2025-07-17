@@ -12,9 +12,8 @@ interface Props {
   videoId?: string; // optional so you can swap later
 }
 
-export default function VideoCard({
+function VideoCard({
   riffs,
-  selectedId,
   videoId = 'dQw4w9WgXcQ', // fallback to Rickroll for demo
 }: Props) {
   const [currentTime, setCurrentTime] = useState(0);
@@ -25,7 +24,6 @@ export default function VideoCard({
     start: r.start,
     end: r.start + r.duration,
     text: r.text ?? '', // Ensure text is always a string
-    highlighted: r.id === selectedId,
   }));
 
   return (
@@ -40,3 +38,5 @@ export default function VideoCard({
     </div>
   );
 }
+
+export default VideoCard;

@@ -50,43 +50,9 @@ describe('VideoCard', () => {
     );
   });
 
-  it('passes only the riffs visible at t=25 into RiffOverlay, marking the selected one highlighted', () => {
-    // pick the second riff as selected
-    const selected = dummyRiffs[1].id;
-    render(<VideoCard riffs={dummyRiffs} selectedId={selected} />);
-
-    const overlay = screen.getByTestId('riff-overlay');
-    // determine which dummyRiffs are in range at t=25
-    const visible = dummyRiffs.filter(
-      r => 25 >= r.start && 25 <= r.start + r.duration,
-    );
-
-    visible.forEach(r => {
-      const span = screen.getByText(r.text!);
-      expect(span).toHaveAttribute(
-        'data-highlighted',
-        String(r.id === selected),
-      );
-      expect(overlay).toContainElement(span);
-    });
-  });
-
   it('renders an empty overlay when no riffs are provided', () => {
     render(<VideoCard riffs={[]} selectedId={null} />);
     const overlay = screen.getByTestId('riff-overlay');
     expect(overlay.children.length).toBe(0);
-  });
-
-  it('does not highlight any riff if selectedId does not match any riff', () => {
-    render(<VideoCard riffs={dummyRiffs} selectedId="NON_EXISTENT_ID" />);
-    // filter visible riffs at t=25
-    const visible = dummyRiffs.filter(
-      r => 25 >= r.start && 25 <= r.start + r.duration,
-    );
-
-    visible.forEach(r => {
-      const span = screen.getByText(r.text!);
-      expect(span).toHaveAttribute('data-highlighted', 'false');
-    });
   });
 });

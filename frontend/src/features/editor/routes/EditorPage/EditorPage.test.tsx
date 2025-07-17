@@ -7,12 +7,12 @@ describe('<EditorPage />', () => {
     render(<EditorPage />);
 
     // Sidebar should list all dummy riffs
-    expect(screen.getByText('Bat dog ears joke')).toBeInTheDocument();
-    expect(screen.getByText('Legs')).toBeInTheDocument();
+    expect(screen.getByText('wait')).toBeInTheDocument();
+    expect(screen.getByText('Classic')).toBeInTheDocument();
 
     // The workspace "Name" input should show the first riff's title
     const nameInput = screen.getByLabelText(/Name/i) as HTMLInputElement;
-    expect(nameInput).toHaveValue('Bat dog ears joke');
+    expect(nameInput).toHaveValue('wait');
   });
 
   it('updates the workspace when a different riff is clicked in the sidebar', async () => {
@@ -20,11 +20,11 @@ describe('<EditorPage />', () => {
     const user = userEvent.setup();
 
     // Click the second riff in the sidebar
-    const secondSidebarItem = screen.getByText('Legs');
+    const secondSidebarItem = screen.getByText('Classic');
     await user.click(secondSidebarItem);
 
     // Workspace "Name" input should now show the second riff's title
     const nameInput = screen.getByLabelText(/Name/i) as HTMLInputElement;
-    expect(nameInput).toHaveValue('Legs');
+    expect(nameInput).toHaveValue('Classic');
   });
 });
