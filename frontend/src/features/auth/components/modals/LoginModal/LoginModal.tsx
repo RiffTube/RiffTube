@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import CTAButton from '@/components/CTAButton';
+import CTAButton from '@/components/Button';
 import Modal from '@/components/Modal';
 import TextInput from '@/components/TextInput';
 import AuthModalLayout from '../../AuthModalLayout';

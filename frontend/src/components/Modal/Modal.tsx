@@ -1,4 +1,4 @@
-import { Fragment, ReactNode } from 'react';
+import { ReactNode } from 'react';
 import {
   Dialog,
   DialogBackdrop,
@@ -15,20 +15,14 @@ export interface ModalProps {
   children: ReactNode;
   className?: string;
 }
-
-export default function Modal({
-  isOpen,
-  onClose,
-  children,
-  className = '',
-}: ModalProps) {
+function Modal({ isOpen, onClose, children, className = '' }: ModalProps) {
   const panelClasses = twMerge(
     'relative w-full max-w-md rounded-2xl bg-reel-dust p-8 text-white shadow-xl',
     className,
   );
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
+    <Transition appear show={isOpen} as="div">
       <Dialog
         as="div"
         className="relative z-50"
@@ -41,7 +35,7 @@ export default function Modal({
         {/* Center the panel */}
         <div className="fixed inset-0 flex items-center justify-center overflow-y-auto p-4">
           <TransitionChild
-            as={Fragment}
+            as="div"
             enter="ease-out duration-200"
             enterFrom="opacity-0 scale-95"
             enterTo="opacity-100 scale-100"
@@ -67,3 +61,5 @@ export default function Modal({
     </Transition>
   );
 }
+
+export default Modal;
