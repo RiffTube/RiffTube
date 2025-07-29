@@ -42,48 +42,23 @@ class User < ApplicationRecord
   # Associations
   # -------------------------------------------------------------------------
   ## Owned projects
-  has_many :projects,
-           foreign_key: :owner_id,
-           inverse_of: :owner,
-           dependent: :destroy
-
+  has_many :projects,           foreign_key: :owner_id, inverse_of: :owner, dependent: :destroy
   ## Collaborations
-  has_many :collaborations, dependent: :destroy
-  has_many :project_memberships,
-           through: :collaborations,
-           source: :project
-
+  has_many :collaborations,     dependent: :destroy
+  has_many :project_memberships, through: :collaborations, source: :project
   ## Content
-  has_many :created_riffs,
-           class_name: 'Riff',
-           foreign_key: :created_by,
-           inverse_of: :creator,
-           dependent: :destroy
-
-  has_many :media_files,      dependent: :destroy
-  has_many :comments,         dependent: :destroy
-  has_many :riff_reactions,   dependent: :destroy
-  has_many :riff_versions,
-           foreign_key: :changed_by,
-           inverse_of: :changed_by_user,
-           dependent: :nullify
-
+  has_many :created_riffs,      class_name: 'Riff', foreign_key: :created_by, inverse_of: :creator, dependent: :destroy
+  has_many :media_files,        dependent: :destroy
+  has_many :comments,           dependent: :destroy
+  has_many :riff_reactions,     dependent: :destroy
+  has_many :riff_versions,      foreign_key: :changed_by, inverse_of: :changed_by_user, dependent: :nullify
   ## Logs & preferences
-  has_many :audit_logs,       dependent: :nullify
-  has_one  :user_preference,  dependent: :destroy
-
+  has_many :audit_logs,         dependent: :nullify
+  has_one  :user_preference,    dependent: :destroy
   ## Social graph
-  has_many :user_relationships,
-           foreign_key: :from_user_id,
-           inverse_of: :from_user,
-           dependent: :destroy
-
-  has_many :received_relationships,
-           class_name: 'UserRelationship',
-           foreign_key: :to_user_id,
-           inverse_of: :to_user,
-           dependent: :destroy
-
+  has_many :user_relationships, foreign_key: :from_user_id, inverse_of: :from_user, dependent: :destroy
+  has_many :received_relationships, class_name: 'UserRelationship', foreign_key: :to_user_id, inverse_of: :to_user,
+                                    dependent: :destroy
   ## Subscriptions
   has_many :user_subscriptions, dependent: :destroy
   has_many :subscriptions,      through: :user_subscriptions
@@ -92,6 +67,18 @@ class User < ApplicationRecord
   # Soft-delete helpers
   # -------------------------------------------------------------------------
   scope :active, -> { where(deleted_at: nil) }
+
+  def active?
+    deleted_at.nil?
+  end
+
+  def inactive?
+    !active?
+  end
+
+  def soft_delete!
+    update!(deleted_at: Time.current)
+  end
 
   def restore
     update!(deleted_at: nil)
