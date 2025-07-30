@@ -112,25 +112,38 @@ This runs `npm install` in `frontend/` and `bundle install` in `backend/`.
 
 ### 2. Set up environment variables
 
-- Copy `.env.example` to `.env` at the project root:
+RiffTube uses **two** `.env` files — one per app. Do **not** keep a root `/.env` with secrets.
 
-```bash
-cp .env.example .env
-```
+#### Backend (`backend/.env`)
 
-- Fill in real credentials in `.env` for your local database connection and CORS settings:
+Create `backend/.env` and add **server‑only** variables:
 
-```bash
+```dotenv
+# Postgres (example)
 DATABASE_USERNAME=your_postgres_username
 DATABASE_PASSWORD=your_postgres_password
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
-ALLOWED_CORS_ORIGINS=http://localhost:5173
+
+# Google OAuth (OmniAuth)
+GOOGLE_CLIENT_ID=xxxxxxxxxxxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=xxxxxxxxxxxxxxxx
+
+# Where the API should redirect the browser after OAuth
+FRONTEND_URL=http://localhost:5173
 ```
 
-> **Important:** `.env` must be located at the project root (`/RiffTube/.env`), **not inside `/backend` or `/frontend`**.
+### Frontend (`frontend/.env`)
 
----
+Create `frontend/.env` and add **client-safe** variables (must start with VITE\_):
+
+```dotenv
+# Base URL for API calls from the browser
+VITE_API_BASE_URL=http://localhost:3000/api/v1
+
+# (Optional) Only if you use Google’s client-side SDK
+# VITE_GOOGLE_CLIENT_ID=xxxxxxxxxxxx.apps.googleusercontent.com
+```
 
 ### 3. Set up the database
 
@@ -164,7 +177,8 @@ This will concurrently start:
 
 ## 🧹 Local Development Setup Checklist
 
-- [ ] `.env` exists at project root and contains correct database and CORS variables
+- [ ] `backend/.env` exists with database + OAuth settings
+- [ ] `frontend/.env` exists with `VITE_API_BASE_URL`
 - [ ] `npm run install:all` completed without errors
 - [ ] `rails db:create` and `rails db:migrate` completed without errors
 - [ ] Rails server (`rails server`) starts successfully
