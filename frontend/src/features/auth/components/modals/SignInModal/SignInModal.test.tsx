@@ -1,41 +1,41 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
-import LoginModal from './LoginModal';
+import SignInModal from './SignInModal';
 
-describe('LoginModal', () => {
+describe('SignInModal', () => {
   it('does not render when isOpen is false', () => {
     render(
-      <LoginModal
+      <SignInModal
         isOpen={false}
         onClose={vi.fn()}
         onSwitchToSignUp={vi.fn()}
       />,
     );
-    expect(screen.queryByText(/Log in to RiffTube/i)).toBeNull();
+    expect(screen.queryByText(/Sign in to RiffTube/i)).toBeNull();
   });
 
   it('renders title, inputs, links, and button when open', async () => {
-    render(<LoginModal isOpen onClose={vi.fn()} onSwitchToSignUp={vi.fn()} />);
+    render(<SignInModal isOpen onClose={vi.fn()} onSwitchToSignUp={vi.fn()} />);
 
     expect(
-      await screen.findByRole('heading', { name: /Log in to RiffTube/i }),
+      await screen.findByRole('heading', { name: /Sign in to RiffTube/i }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText(/Username or email/i)).toBeInTheDocument();
     const pwd = screen.getByLabelText(/Password/i);
     expect(pwd).toHaveAttribute('type', 'password');
-    expect(screen.getByText(/Trouble logging in\?/i)).toHaveAttribute(
+    expect(screen.getByText(/Trouble signing in\?/i)).toHaveAttribute(
       'href',
       '/forgot',
     );
-    expect(screen.getByRole('button', { name: /Log in/i })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Sign in' })).toHaveAttribute(
       'type',
       'submit',
     );
   });
 
   it('updates inputs when typing', async () => {
-    render(<LoginModal isOpen onClose={vi.fn()} onSwitchToSignUp={vi.fn()} />);
+    render(<SignInModal isOpen onClose={vi.fn()} onSwitchToSignUp={vi.fn()} />);
 
     const user = userEvent.setup();
     const userInput = screen.getByLabelText(
@@ -52,12 +52,12 @@ describe('LoginModal', () => {
 
   it('calls console.log with credentials on submit', async () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-    render(<LoginModal isOpen onClose={vi.fn()} onSwitchToSignUp={vi.fn()} />);
+    render(<SignInModal isOpen onClose={vi.fn()} onSwitchToSignUp={vi.fn()} />);
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/Username or email/i), 'alice');
     await user.type(screen.getByLabelText(/Password/i), 'wonderland');
-    await user.click(screen.getByRole('button', { name: /Log in/i }));
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
 
     expect(logSpy).toHaveBeenCalledWith({
       username: 'alice',
@@ -69,7 +69,7 @@ describe('LoginModal', () => {
   it('calls onSwitchToSignUp when clicking “Sign up” link', async () => {
     const onSwitchToSignUp = vi.fn();
     render(
-      <LoginModal
+      <SignInModal
         isOpen
         onClose={vi.fn()}
         onSwitchToSignUp={onSwitchToSignUp}
@@ -84,7 +84,7 @@ describe('LoginModal', () => {
 
   it('calls onClose when pressing Escape', async () => {
     const onClose = vi.fn();
-    render(<LoginModal isOpen onClose={onClose} onSwitchToSignUp={vi.fn()} />);
+    render(<SignInModal isOpen onClose={onClose} onSwitchToSignUp={vi.fn()} />);
 
     const user = userEvent.setup();
     await user.keyboard('{Escape}');

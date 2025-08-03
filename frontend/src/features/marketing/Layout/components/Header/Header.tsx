@@ -17,10 +17,10 @@ function Header() {
           </Link>
 
           <Link
-            to="/login"
+            to="/signin"
             className="text-lg font-semibold text-white transition-colors hover:text-primary"
           >
-            Log in
+            Sign in
           </Link>
         </nav>
       </div>

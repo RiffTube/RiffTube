@@ -242,7 +242,7 @@ Releases are triggered by Conventional Commits on the `main` branch.
 - [tailwind-merge](https://github.com/dcastil/twmerge)
 - [Storybook](https://storybook.js.org/)
 - [YouTube API](https://developers.google.com/youtube/v3)
-- [Google Login](https://developers.google.com/identity)
+- [Google Sign in](https://developers.google.com/identity)
 - [Web Audio Recorder](https://github.com/higuma/web-audio-recorder-js)
 
 ### Backend
