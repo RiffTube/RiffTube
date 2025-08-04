@@ -1,49 +1,51 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Header from './Header';
 
 describe('<Header />', () => {
-  const renderHeader = () => {
-    return render(
+  it('renders a <header> banner and a <nav>', () => {
+    render(
       <MemoryRouter>
-        <Header />
+        <Header openSignIn={() => {}} />
       </MemoryRouter>,
     );
-  };
 
-  it('renders a header element with the expected container structure', () => {
-    renderHeader();
-    const header = screen.getByRole('banner');
-    expect(header).toBeInTheDocument();
-    const container = header.querySelector('.container');
-    expect(container).toBeInTheDocument();
+    expect(screen.getByRole('banner')).toBeInTheDocument();
+    expect(screen.getByRole('navigation')).toBeInTheDocument();
   });
 
-  it('renders a home link (TV icon) pointing to "/"', () => {
-    renderHeader();
-    // Grab all links and find the one whose href equals '/'
-    const links = screen.getAllByRole('link');
-    const homeLink = links.find(link => link.getAttribute('href') === '/');
+  it('renders a home link pointing to "/" with the TV icon inside', () => {
+    render(
+      <MemoryRouter>
+        <Header openSignIn={() => {}} />
+      </MemoryRouter>,
+    );
+
+    // Try by accessible name first, then fallback to href lookup
+    const homeLink =
+      screen.queryByRole('link', { name: /home/i }) ??
+      screen.getAllByRole('link').find(l => l.getAttribute('href') === '/');
+
     expect(homeLink).toBeInTheDocument();
-    // It should contain an <svg> (the TV icon)
+    expect(homeLink).toHaveAttribute('href', '/');
+
     const svg = homeLink!.querySelector('svg');
     expect(svg).toBeInTheDocument();
-    // Check that aria-hidden is set appropriately on the svg
     expect(svg).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('renders a "Sign in" link pointing to "/signin"', () => {
-    renderHeader();
-    const signinLink = screen.getByRole('link', { name: /sign in/i });
-    expect(signinLink).toBeInTheDocument();
-    expect(signinLink).toHaveAttribute('href', '/signin');
-  });
+  it('renders a "Sign In" button and calls openSignIn when clicked', () => {
+    const mockOpen = vi.fn();
+    render(
+      <MemoryRouter>
+        <Header openSignIn={mockOpen} />
+      </MemoryRouter>,
+    );
 
-  it('renders a nav', () => {
-    renderHeader();
+    const btn = screen.getByRole('button', { name: /sign in/i });
+    expect(btn).toBeInTheDocument();
 
-    const nav = screen.queryByRole('navigation');
-
-    expect(nav).toBeInTheDocument();
+    fireEvent.click(btn);
+    expect(mockOpen).toHaveBeenCalledTimes(1);
   });
 });

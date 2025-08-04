@@ -6,31 +6,29 @@ describe('<Layout />', () => {
   it('renders the Header component in a banner landmark', () => {
     render(
       <MemoryRouter>
-        <Layout>
+        <Layout openSignIn={() => {}}>
           <div>Child</div>
         </Layout>
       </MemoryRouter>,
     );
-    const banner = screen.getByRole('banner');
-    expect(banner).toBeInTheDocument();
+    expect(screen.getByRole('banner')).toBeInTheDocument();
   });
 
   it('renders the Footer component in a contentinfo landmark', () => {
     render(
       <MemoryRouter>
-        <Layout>
+        <Layout openSignIn={() => {}}>
           <div>Child</div>
         </Layout>
       </MemoryRouter>,
     );
-    const footer = screen.getByRole('contentinfo');
-    expect(footer).toBeInTheDocument();
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument();
   });
 
   it('renders its children inside the main region', () => {
     render(
       <MemoryRouter>
-        <Layout>
+        <Layout openSignIn={() => {}}>
           <p>Test child content</p>
         </Layout>
       </MemoryRouter>,

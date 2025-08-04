@@ -1,38 +1,49 @@
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { Dialog } from '@headlessui/react';
 import { describe, expect, it } from 'vitest';
 import AuthModalLayout from './AuthModalLayout';
 
 describe('AuthModalLayout', () => {
   it('renders the title and children without footer by default', () => {
     render(
-      <AuthModalLayout title="Test Title">
-        <div data-testid="child">Child content</div>
-      </AuthModalLayout>,
+      <Dialog open={true} onClose={() => {}}>
+        <AuthModalLayout title="Test Title">
+          <div data-testid="child">Child content</div>
+        </AuthModalLayout>
+      </Dialog>,
     );
 
-    const heading = screen.getByRole('heading', { level: 2 });
-    expect(heading).toHaveTextContent('Test Title');
+    // The DialogTitle should produce an <h2> with the given title
+    const heading = screen.getByRole('heading', { name: /Test Title/ });
+    expect(heading).toBeInTheDocument();
+    expect(heading.tagName).toBe('H2');
 
-    expect(screen.getByTestId('child')).toBeInTheDocument();
+    // Your child is rendered
+    expect(screen.getByTestId('child')).toHaveTextContent('Child content');
 
-    const footer = screen.queryByText('Footer content');
-    expect(footer).toBeNull();
+    // No footer by default
+    expect(screen.queryByText('Footer content')).toBeNull();
   });
 
   it('renders the footer when provided', () => {
     render(
-      <AuthModalLayout
-        title="Another Title"
-        footer={<span>Footer content</span>}
-      >
-        <p>Some children</p>
-      </AuthModalLayout>,
+      <Dialog open={true} onClose={() => {}}>
+        <AuthModalLayout
+          title="Another Title"
+          footer={<span>Footer content</span>}
+        >
+          <p>Some children</p>
+        </AuthModalLayout>
+      </Dialog>,
     );
 
+    // Footer appears when passed
     const footer = screen.getByText('Footer content');
-
     expect(footer).toBeInTheDocument();
     expect(footer).toBeVisible();
+
+    // And it still renders the children
+    expect(screen.getByText('Some children')).toBeInTheDocument();
   });
 });

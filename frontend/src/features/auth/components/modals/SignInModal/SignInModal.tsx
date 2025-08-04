@@ -12,6 +12,7 @@ export interface SignInModalProps {
   onSwitchToSignUp: () => void;
   /** Optional: trigger Google OAuth */
   onGoogle?: () => void;
+  onSignIn: (data: { username: string; password: string }) => Promise<void>;
 }
 
 function SignInModal({
@@ -19,14 +20,15 @@ function SignInModal({
   onClose,
   onSwitchToSignUp,
   onGoogle,
+  onSignIn,
 }: SignInModalProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: wire up sign in logic
-    console.log({ username, password });
+    // TODO: wire up signup logic
+    await onSignIn({ username, password });
   };
 
   const handleGoogle = () => {
