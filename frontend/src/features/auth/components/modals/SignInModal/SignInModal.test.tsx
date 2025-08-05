@@ -1,130 +1,128 @@
+import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
-import SignInModal from './';
+import SignInModal from './SignInModal';
 
-describe('SignInModal', () => {
-  it('does not render when isOpen is false', () => {
+// ---------- mock useAuth so we can inject spies ----------
+let signInMock: ReturnType<typeof vi.fn>;
+
+vi.mock('@/features/auth/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: null,
+    loading: false,
+    error: null,
+    // will be reassigned inside each test
+    signIn: signInMock,
+    signUp: vi.fn(),
+    signOut: vi.fn(),
+  }),
+}));
+
+describe('<SignInModal />', () => {
+  it('renders nothing when isOpen is false', () => {
+    signInMock = vi.fn();
     render(
       <SignInModal
         isOpen={false}
-        onClose={vi.fn()}
-        onSwitchToSignUp={vi.fn()}
-        onSignIn={vi.fn().mockResolvedValue(undefined)}
+        onClose={() => {}}
+        onSwitchToSignUp={() => {}}
       />,
     );
-    expect(screen.queryByText(/Sign in to RiffTube/i)).toBeNull();
+    expect(screen.queryByText(/sign in to rifftube/i)).toBeNull();
   });
 
-  it('renders title, inputs, links, and button when open', async () => {
+  it('shows heading, inputs, links, and submit when open', () => {
+    signInMock = vi.fn();
     render(
-      <SignInModal
-        isOpen
-        onClose={vi.fn()}
-        onSwitchToSignUp={vi.fn()}
-        onSignIn={vi.fn().mockResolvedValue(undefined)}
-      />,
+      <SignInModal isOpen onClose={() => {}} onSwitchToSignUp={() => {}} />,
     );
 
-    // heading
     expect(
-      await screen.findByRole('heading', { name: /Sign in to RiffTube/i }),
+      screen.getByRole('heading', { name: /sign in to rifftube/i }),
     ).toBeInTheDocument();
 
-    // inputs
-    expect(screen.getByLabelText(/Username or email/i)).toBeInTheDocument();
-    const pwd = screen.getByLabelText(/Password/i);
+    expect(screen.getByLabelText(/email or username/i)).toBeInTheDocument();
+    const pwd = screen.getByLabelText(/password/i);
     expect(pwd).toHaveAttribute('type', 'password');
 
-    // forgot link
-    expect(screen.getByText(/Trouble signing in\?/i)).toHaveAttribute(
-      'href',
-      '/forgot',
-    );
+    expect(
+      screen.getByRole('link', { name: /trouble signing in\?/i }),
+    ).toHaveAttribute('href', '/forgot');
 
-    // submit button
     expect(screen.getByRole('button', { name: /^sign in$/i })).toHaveAttribute(
       'type',
       'submit',
     );
   });
 
-  it('updates inputs when typing', async () => {
+  it('updates inputs as the user types', async () => {
+    signInMock = vi.fn();
     render(
-      <SignInModal
-        isOpen
-        onClose={vi.fn()}
-        onSwitchToSignUp={vi.fn()}
-        onSignIn={vi.fn().mockResolvedValue(undefined)}
-      />,
+      <SignInModal isOpen onClose={() => {}} onSwitchToSignUp={() => {}} />,
     );
 
     const user = userEvent.setup();
-    const userInput = screen.getByLabelText(
-      /Username or email/i,
+    const idInput = screen.getByLabelText(
+      /email or username/i,
     ) as HTMLInputElement;
-    const passInput = screen.getByLabelText(/Password/i) as HTMLInputElement;
+    const passInput = screen.getByLabelText(/password/i) as HTMLInputElement;
 
-    await user.type(userInput, 'foo');
+    await user.type(idInput, 'foo');
     await user.type(passInput, 'bar');
 
-    expect(userInput.value).toBe('foo');
-    expect(passInput.value).toBe('bar');
+    expect(idInput).toHaveValue('foo');
+    expect(passInput).toHaveValue('bar');
   });
 
-  it('calls onSignIn with credentials on submit', async () => {
-    const onSignIn = vi.fn().mockResolvedValue(undefined);
+  it('disables submit until form is valid, then calls signIn', async () => {
+    signInMock = vi.fn().mockResolvedValue(undefined);
+
     render(
-      <SignInModal
-        isOpen
-        onClose={vi.fn()}
-        onSwitchToSignUp={vi.fn()}
-        onSignIn={onSignIn}
-      />,
+      <SignInModal isOpen onClose={() => {}} onSwitchToSignUp={() => {}} />,
     );
 
     const user = userEvent.setup();
-    await user.type(screen.getByLabelText(/Username or email/i), 'alice');
-    await user.type(screen.getByLabelText(/Password/i), 'wonderland');
-    await user.click(screen.getByRole('button', { name: /^sign in$/i }));
+    const idInput = screen.getByLabelText(/email or username/i);
+    const pwdInput = screen.getByLabelText(/password/i);
+    const submitBtn = screen.getByRole('button', { name: /^sign in$/i });
 
-    expect(onSignIn).toHaveBeenCalledWith({
-      username: 'alice',
-      password: 'wonderland',
-    });
+    expect(submitBtn).toBeDisabled();
+
+    await user.type(idInput, 'alice');
+    await user.type(pwdInput, 'wonderland');
+
+    expect(submitBtn).toBeEnabled();
+
+    await user.click(submitBtn);
+
+    expect(signInMock).toHaveBeenCalledTimes(1);
+    expect(signInMock).toHaveBeenCalledWith('alice', 'wonderland');
   });
 
-  it('calls onSwitchToSignUp when clicking “Sign up” link', async () => {
+  it('fires onSwitchToSignUp when the switch link is clicked', async () => {
+    signInMock = vi.fn();
     const onSwitch = vi.fn();
+
     render(
-      <SignInModal
-        isOpen
-        onClose={vi.fn()}
-        onSwitchToSignUp={onSwitch}
-        onSignIn={vi.fn().mockResolvedValue(undefined)}
-      />,
+      <SignInModal isOpen onClose={() => {}} onSwitchToSignUp={onSwitch} />,
     );
 
     const user = userEvent.setup();
-    await user.click(screen.getByText(/Don't have an account\? Sign up/i));
-
+    await user.click(screen.getByText(/don't have an account\? sign up/i));
     expect(onSwitch).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onClose when pressing Escape', async () => {
+  it('fires onClose when Escape is pressed', async () => {
+    signInMock = vi.fn();
     const onClose = vi.fn();
+
     render(
-      <SignInModal
-        isOpen
-        onClose={onClose}
-        onSwitchToSignUp={vi.fn()}
-        onSignIn={vi.fn().mockResolvedValue(undefined)}
-      />,
+      <SignInModal isOpen onClose={onClose} onSwitchToSignUp={() => {}} />,
     );
 
     const user = userEvent.setup();
     await user.keyboard('{Escape}');
-
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

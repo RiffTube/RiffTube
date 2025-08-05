@@ -1,18 +1,32 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import SignUpModal from './SignUpModal';
 
-describe('SignUpModal', () => {
-  it('renders title, OAuth button, inputs, agreement, submit, and switch link', () => {
+let signUpMock: ReturnType<typeof vi.fn>;
+
+vi.mock('@/features/auth/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: null,
+    loading: false,
+    error: null,
+    signIn: vi.fn(),
+    signOut: vi.fn(),
+    // will be reassigned inside each test
+    signUp: signUpMock,
+  }),
+}));
+
+describe('<SignUpModal />', () => {
+  it('renders heading, OAuth button, inputs, agreement text, submit and switch link', () => {
+    signUpMock = vi.fn();
     render(
       <SignUpModal
         isOpen
         onClose={() => {}}
         onSwitchToSignIn={() => {}}
         onGoogle={() => {}}
-        onSignUp={async () => {}}
       />,
     );
 
@@ -24,6 +38,7 @@ describe('SignUpModal', () => {
       screen.getByRole('button', { name: /sign up with google/i }),
     ).toBeInTheDocument();
 
+    expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
 
@@ -43,7 +58,8 @@ describe('SignUpModal', () => {
     ).toBeInTheDocument();
   });
 
-  it('calls onGoogle when the OAuth button is clicked', () => {
+  it('calls onGoogle when the OAuth button is clicked', async () => {
+    signUpMock = vi.fn();
     const onGoogle = vi.fn();
 
     render(
@@ -52,19 +68,17 @@ describe('SignUpModal', () => {
         onClose={() => {}}
         onSwitchToSignIn={() => {}}
         onGoogle={onGoogle}
-        onSignUp={async () => {}}
       />,
     );
 
-    fireEvent.click(
+    await userEvent.click(
       screen.getByRole('button', { name: /sign up with google/i }),
     );
     expect(onGoogle).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onSignUp with email & password on submit', async () => {
-    const user = userEvent.setup();
-    const onSignUp = vi.fn().mockResolvedValue(undefined);
+  it('enables submit only when all fields are valid and then calls signUp', async () => {
+    signUpMock = vi.fn().mockResolvedValue(undefined);
 
     render(
       <SignUpModal
@@ -72,35 +86,49 @@ describe('SignUpModal', () => {
         onClose={() => {}}
         onSwitchToSignIn={() => {}}
         onGoogle={() => {}}
-        onSignUp={onSignUp}
       />,
     );
 
-    await user.type(screen.getByLabelText(/email/i), 'alice@example.com');
-    await user.type(screen.getByLabelText(/password/i), 'hunter2');
-    await user.click(screen.getByRole('button', { name: /^sign up$/i }));
+    const user = userEvent.setup();
 
-    expect(onSignUp).toHaveBeenCalledTimes(1);
-    expect(onSignUp).toHaveBeenCalledWith({
-      email: 'alice@example.com',
-      password: 'hunter2',
-    });
+    const usernameInput = screen.getByLabelText(/username/i);
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = screen.getByLabelText(/password/i);
+    const submitBtn = screen.getByRole('button', { name: /^sign up$/i });
+
+    expect(submitBtn).toBeDisabled();
+
+    await user.type(usernameInput, 'alice_123');
+    await user.type(emailInput, 'alice@example.com');
+    await user.type(passwordInput, 'hunter2');
+
+    expect(submitBtn).toBeEnabled();
+
+    await user.click(submitBtn);
+
+    expect(signUpMock).toHaveBeenCalledTimes(1);
+    expect(signUpMock).toHaveBeenCalledWith(
+      'alice_123',
+      'alice@example.com',
+      'hunter2',
+    );
   });
 
-  it('calls onSwitchToSignIn when clicking the switch link', () => {
+  it('fires onSwitchToSignIn when the switch link is clicked', async () => {
+    signUpMock = vi.fn();
     const onSwitch = vi.fn();
-
     render(
       <SignUpModal
         isOpen
         onClose={() => {}}
         onSwitchToSignIn={onSwitch}
         onGoogle={() => {}}
-        onSignUp={async () => {}}
       />,
     );
 
-    fireEvent.click(screen.getByText(/already have an account\? sign in/i));
+    await userEvent.click(
+      screen.getByText(/already have an account\? sign in/i),
+    );
     expect(onSwitch).toHaveBeenCalledTimes(1);
   });
 });

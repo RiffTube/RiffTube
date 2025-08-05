@@ -17,7 +17,6 @@ function LandingPage() {
   const openSignIn = () => setSignInOpen(true);
   const closeSignIn = () => setSignInOpen(false);
 
-  // If you ever want to flip between them:
   const switchToSignIn = () => {
     closeSignUp();
     openSignIn();
@@ -32,25 +31,17 @@ function LandingPage() {
       <HeroSection openSignUp={openSignUp} />
       <HowItWorksSection />
       <FAQSection />
+
       <SignUpModal
         isOpen={isSignUpOpen}
         onClose={closeSignUp}
         onSwitchToSignIn={switchToSignIn}
-        onSignUp={async () => {
-          // TODO: call your signup API, then close on success:
-          // await api.signUp({ email, password });
-          closeSignUp();
-        }}
       />
+
       <SignInModal
         isOpen={isSignInOpen}
         onClose={closeSignIn}
         onSwitchToSignUp={switchToSignUp}
-        onSignIn={async () => {
-          // TODO: call your signup API, then close on success:
-          // await api.signUp({ email, password });
-          closeSignIn();
-        }}
       />
     </Layout>
   );

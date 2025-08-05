@@ -16,9 +16,18 @@ export default defineConfig({
         svgoConfig: { floatPrecision: 2 },
       },
     }),
-
     react(),
-
     tailwind(),
   ],
+  server: {
+    proxy: {
+      // proxy any /api/* request to your Rails backend
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+        ws: true, // only needed if you use ActionCable or websockets
+      },
+    },
+  },
 });

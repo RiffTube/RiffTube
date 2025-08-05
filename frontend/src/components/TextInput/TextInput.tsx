@@ -55,14 +55,12 @@ function TextInput(
 
   const [isFocused, setIsFocused] = useState(false);
   const [touched, setTouched] = useState(false);
-
-  const nativeInvalid = inputRef.current
-    ? !inputRef.current.validity.valid
-    : false;
+  const validity = inputRef.current?.validity;
+  const nativeInvalid = validity ? !validity.valid : false;
 
   const shouldShow = forceShowError || touched;
 
-  const showError = shouldShow && (Boolean(errorMessage) || nativeInvalid);
+  const showError = forceShowError || (shouldShow && nativeInvalid);
   const showInfo = isFocused && !showError;
 
   const describedBy = showError ? `${id}-error` : undefined;
