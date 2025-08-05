@@ -112,7 +112,7 @@ function TextInput(
             {errorMessage ?? 'Invalid value'}
           </p>
         )}
-        {showInfo && <p className="text-xs text-white">{infoMessage}</p>}
+        {showInfo && <p className="text-[0.6rem] sm:text-xs">{infoMessage}</p>}
       </div>
     </div>
   );

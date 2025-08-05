@@ -7,24 +7,22 @@ import {
   useState,
 } from 'react';
 import {
+  ApiError,
   signIn as apiSignIn,
   signUp as apiSignUp,
 } from '@/features/auth/services/authApi';
+import type {
+  ApiUserResponse,
+  UserDTO,
+} from '@/features/auth/services/authApi';
 
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-}
-
-interface ApiUserResponse {
-  user: User;
-}
+export type User = UserDTO;
 
 interface AuthContextShape {
   user: User | null;
   loading: boolean;
   error: string | null;
+  clearError: () => void;
   signIn: (login: string, password: string) => Promise<void>;
   signUp: (username: string, email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -32,18 +30,58 @@ interface AuthContextShape {
 
 const AuthContext = createContext<AuthContextShape | null>(null);
 
+interface HasStatus {
+  status?: number;
+}
+
+interface HasResponseStatus {
+  response?: {
+    status?: number;
+  };
+}
+
+function getStatus(err: unknown): number | undefined {
+  if (err instanceof ApiError) return err.status;
+
+  if (typeof err === 'object' && err !== null) {
+    const maybeStatus = err as HasStatus;
+    if (typeof maybeStatus.status === 'number') return maybeStatus.status;
+
+    const maybeResp = err as HasResponseStatus;
+    if (typeof maybeResp.response?.status === 'number') {
+      return maybeResp.response.status;
+    }
+  }
+  return undefined;
+}
+
+function normalizeAuthError(err: unknown): string {
+  const status = getStatus(err);
+
+  if (status === 401 || status === 403) {
+    return 'Email/username or password is incorrect.';
+  }
+  if (typeof status === 'number' && status >= 500) {
+    return 'Something went wrong on our end. Please try again.';
+  }
+  if (err instanceof Error && err.message) {
+    return err.message;
+  }
+  return 'Unable to complete the request. Please try again.';
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       setLoading(true);
       try {
         const res = await fetch('/api/v1/users/me', { credentials: 'include' });
         if (res.ok) {
-          const json: ApiUserResponse = await res.json();
+          const json = (await res.json()) as ApiUserResponse;
           setUser(json.user);
         }
       } finally {
@@ -52,16 +90,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })();
   }, []);
 
+  const clearError = useCallback(() => setError(null), []);
+
   const signIn = useCallback(async (login: string, password: string) => {
     setError(null);
     setLoading(true);
     try {
-      const json: ApiUserResponse = await apiSignIn({ login, password });
+      const json = await apiSignIn({ login, password });
       setUser(json.user);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Unable to sign in. Try again.',
-      );
+    } catch (err: unknown) {
+      setError(normalizeAuthError(err));
       throw err;
     } finally {
       setLoading(false);
@@ -73,16 +111,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setError(null);
       setLoading(true);
       try {
-        const json: ApiUserResponse = await apiSignUp({
-          username,
-          email,
-          password,
-        });
-        setUser(json.user); // or keep null until confirmed
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Unable to sign up. Try again.',
-        );
+        const json = await apiSignUp({ username, email, password });
+        setUser(json.user);
+      } catch (err: unknown) {
+        setError(normalizeAuthError(err));
         throw err;
       } finally {
         setLoading(false);
@@ -108,6 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     loading,
     error,
+    clearError,
     signIn,
     signUp,
     signOut,
@@ -115,10 +148,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-/* ------------------------------------------------------------------ */
-/* Hook                                                               */
-/* ------------------------------------------------------------------ */
 
 export const useAuth = (): AuthContextShape => {
   const ctx = useContext(AuthContext);

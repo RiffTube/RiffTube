@@ -14,15 +14,12 @@ describe('AuthModalLayout', () => {
       </Dialog>,
     );
 
-    // The DialogTitle should produce an <h2> with the given title
     const heading = screen.getByRole('heading', { name: /Test Title/ });
     expect(heading).toBeInTheDocument();
     expect(heading.tagName).toBe('H2');
 
-    // Your child is rendered
     expect(screen.getByTestId('child')).toHaveTextContent('Child content');
 
-    // No footer by default
     expect(screen.queryByText('Footer content')).toBeNull();
   });
 
@@ -38,12 +35,10 @@ describe('AuthModalLayout', () => {
       </Dialog>,
     );
 
-    // Footer appears when passed
     const footer = screen.getByText('Footer content');
     expect(footer).toBeInTheDocument();
     expect(footer).toBeVisible();
 
-    // And it still renders the children
     expect(screen.getByText('Some children')).toBeInTheDocument();
   });
 });

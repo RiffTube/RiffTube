@@ -12,7 +12,6 @@ function AuthModalLayout({ title, children, footer }: AuthModalLayoutProps) {
       <DialogTitle as="h2" className="mb-6 text-2xl font-bold text-white">
         {title}
       </DialogTitle>
-
       {children}
       {footer && (
         <div className="mt-6 text-center text-sm text-gray-400">{footer}</div>
