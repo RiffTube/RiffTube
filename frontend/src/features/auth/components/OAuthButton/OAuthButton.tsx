@@ -1,46 +1,60 @@
+import type { ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 import GoogleLogo from '@/assets/google.svg?react';
-import CTAButton, { CTAButtonProps } from '@/components/Button';
+import Button, { ButtonProps } from '@/components/Button';
 
-export type OAuthProvider = 'google'; // later could include: | 'github' | 'apple'
+export type OAuthProvider = 'google';
 
-export interface OAuthButtonProps extends Omit<CTAButtonProps, 'variant'> {
+type Mode = 'signin' | 'signup';
+
+export interface OAuthButtonProps extends Omit<ButtonProps, 'variant'> {
   provider?: OAuthProvider;
+  mode?: Mode;
+  textOverride?: string;
 }
 
 function OAuthButton({
   provider = 'google',
+  mode = 'signup',
+  textOverride,
   onClick,
   className = '',
   ...rest
 }: OAuthButtonProps) {
-  const config: Record<
-    OAuthProvider,
-    { icon: React.ReactNode; label: string }
-  > = {
-    google: {
-      icon: <GoogleLogo className="h-5 w-5" aria-hidden="true" />,
-      label: 'Sign in with Google',
-    },
+  const providerName: Record<OAuthProvider, string> = {
+    google: 'Google',
   };
 
-  const { icon, label } = config[provider];
+  const iconByProvider: Record<OAuthProvider, ReactNode> = {
+    google: <GoogleLogo className="h-5 w-5" aria-hidden="true" />,
+  };
+
+  const prefixByMode: Record<Mode, string> = {
+    signin: 'Sign in with',
+    signup: 'Sign up with',
+  };
+
+  const label =
+    textOverride ?? `${prefixByMode[mode]} ${providerName[provider]}`;
 
   const mergedClasses = twMerge(
-    'flex w-full items-center justify-center gap-2 py-3',
+    'flex w-full items-center justify-start gap-2 py-3',
     className,
   );
 
   return (
-    <CTAButton
+    <Button
       onClick={onClick}
       variant="lightMode"
       className={mergedClasses}
+      aria-label={label}
+      data-provider={provider}
+      data-mode={mode}
       {...rest}
     >
-      {icon}
-      <span className="font-medium">{label}</span>
-    </CTAButton>
+      {iconByProvider[provider]}
+      <span className="ml-2 font-medium">{label}</span>
+    </Button>
   );
 }
 

@@ -32,11 +32,11 @@ describe('<Header />', () => {
     expect(svg).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('renders a "Log in" link pointing to "/login"', () => {
+  it('renders a "Sign in" link pointing to "/signin"', () => {
     renderHeader();
-    const loginLink = screen.getByRole('link', { name: /log in/i });
-    expect(loginLink).toBeInTheDocument();
-    expect(loginLink).toHaveAttribute('href', '/login');
+    const signinLink = screen.getByRole('link', { name: /sign in/i });
+    expect(signinLink).toBeInTheDocument();
+    expect(signinLink).toHaveAttribute('href', '/signin');
   });
 
   it('renders a nav', () => {

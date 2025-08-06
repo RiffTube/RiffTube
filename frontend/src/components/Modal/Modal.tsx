@@ -35,6 +35,7 @@ function Modal({ isOpen, onClose, children, className = '' }: ModalProps) {
         {/* Center the panel */}
         <div className="fixed inset-0 flex items-center justify-center overflow-y-auto p-4">
           <TransitionChild
+            className="h-full w-full"
             as="div"
             enter="ease-out duration-200"
             enterFrom="opacity-0 scale-95"
