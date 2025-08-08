@@ -16,9 +16,17 @@ export default defineConfig({
         svgoConfig: { floatPrecision: 2 },
       },
     }),
-
     react(),
-
     tailwind(),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      },
+    },
+  },
 });

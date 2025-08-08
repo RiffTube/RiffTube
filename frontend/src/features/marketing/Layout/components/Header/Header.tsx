@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom';
 import TvIcon from '@/assets/rifftube-logo.svg?react';
 
-function Header() {
+interface HeaderProps {
+  openSignIn: () => void;
+}
+
+function Header({ openSignIn }: HeaderProps) {
   return (
     <header className="bg-backstage">
       <div className="container mx-auto max-w-screen-2xl px-4 py-4">
@@ -15,13 +19,13 @@ function Header() {
               aria-hidden="true"
             />
           </Link>
-
-          <Link
-            to="/signin"
-            className="text-lg font-semibold text-white transition-colors hover:text-primary"
+          <button
+            type="button"
+            onClick={openSignIn}
+            className="cursor-pointer text-lg font-semibold text-white transition-colors hover:text-primary"
           >
-            Sign in
-          </Link>
+            Sign In
+          </button>
         </nav>
       </div>
     </header>

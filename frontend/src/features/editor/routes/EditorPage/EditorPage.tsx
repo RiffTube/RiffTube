@@ -3,7 +3,7 @@ import EditorWorkspace from '../../components/EditorWorkspace';
 import RiffSidebar from '../../components/RiffSidebar';
 import { dummyRiffs } from '../../data/dummyRiffs';
 
-export default function EditorPage() {
+function EditorPage() {
   const [riffs, setRiffs] = useState(dummyRiffs);
   const [selectedId, setSelectedId] = useState<string | null>(riffs[0].id);
   return (
@@ -21,3 +21,4 @@ export default function EditorPage() {
     </div>
   );
 }
+export default EditorPage;

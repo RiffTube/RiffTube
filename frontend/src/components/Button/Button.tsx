@@ -16,6 +16,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   ariaLabel?: string;
   /** Additional classes to merge */
   className?: string;
+  disabled?: boolean;
 }
 
 const base =

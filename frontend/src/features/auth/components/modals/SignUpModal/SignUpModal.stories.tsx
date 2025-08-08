@@ -1,41 +1,59 @@
 import { useState } from 'react';
-import { Meta, StoryFn } from '@storybook/react';
+import { action } from '@storybook/addon-actions';
+import type { Meta, StoryObj } from '@storybook/react';
+import { http, HttpResponse } from 'msw';
 import SignUpModal, { SignUpModalProps } from './SignUpModal';
 
-export default {
+const meta: Meta<typeof SignUpModal> = {
   title: 'Auth/SignUpModal',
   component: SignUpModal,
   parameters: {
     layout: 'centered',
+    msw: {
+      handlers: [
+        http.get('/api/v1/users/me', () =>
+          HttpResponse.json({ error: 'Not logged in' }, { status: 401 }),
+        ),
+
+        http.post('/api/v1/signup', async () =>
+          HttpResponse.json({
+            user: {
+              id: 'demo-user-id',
+              username: 'new_user',
+              email: 'new_user@example.com',
+            },
+          }),
+        ),
+      ],
+    },
   },
-} as Meta<typeof SignUpModal>;
+};
+export default meta;
 
-const Template: StoryFn<typeof SignUpModal> = (args: SignUpModalProps) => {
-  const [isOpen, setIsOpen] = useState(args.isOpen);
+type Story = StoryObj<typeof SignUpModal>;
 
+function StatefulWrapper(args: SignUpModalProps) {
+  const [isOpen, setIsOpen] = useState<boolean>(args.isOpen ?? false);
   return (
     <>
-      <button onClick={() => setIsOpen(true)} style={{ marginBottom: 16 }}>
+      <button
+        onClick={() => setIsOpen(true)}
+        style={{ marginBottom: 16, padding: '8px 12px' }}
+      >
         Open Sign Up Modal
       </button>
       <SignUpModal
         {...args}
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        onSwitchToSignIn={() => alert('Switch to Sign In')}
-        onGoogle={() => alert('Continue with Google')}
-        onSignUp={async ({ email, password }) => {
-          // Fake network call
-          await new Promise(r => setTimeout(r, 800));
-          console.log('SignUp payload', { email, password });
-          setIsOpen(false);
-        }}
+        onSwitchToSignIn={args.onSwitchToSignIn ?? action('onSwitchToSignIn')}
+        onGoogle={args.onGoogle ?? action('onGoogle')}
       />
     </>
   );
-};
+}
 
-export const Default = Template.bind({});
-Default.args = {
-  isOpen: true,
+export const Default: Story = {
+  render: args => <StatefulWrapper {...args} />,
+  args: { isOpen: true },
 };

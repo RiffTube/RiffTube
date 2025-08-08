@@ -11,9 +11,14 @@ export interface OAuthButtonProps extends Omit<ButtonProps, 'variant'> {
   provider?: OAuthProvider;
   mode?: Mode;
   textOverride?: string;
+  disabled?: boolean;
+  isLoading?: boolean;
+  onClick?: () => void;
 }
 
 function OAuthButton({
+  disabled = false,
+  isLoading = false,
   provider = 'google',
   mode = 'signup',
   textOverride,
@@ -44,6 +49,8 @@ function OAuthButton({
 
   return (
     <Button
+      disabled={disabled}
+      isLoading={isLoading}
       onClick={onClick}
       variant="lightMode"
       className={mergedClasses}

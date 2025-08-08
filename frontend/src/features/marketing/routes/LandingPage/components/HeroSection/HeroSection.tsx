@@ -1,7 +1,10 @@
-import { Link } from 'react-router-dom';
+import Button from '@/components/Button';
 import Logo from '@/components/Logo';
 
-function HeroSection() {
+interface HeroSectionProps {
+  openSignUp: () => void;
+}
+function HeroSection({ openSignUp }: HeroSectionProps) {
   return (
     <section className="overflow-hidden bg-backstage text-white">
       <div className="mx-auto max-w-lg space-y-6 px-4 py-8 sm:max-w-xl sm:py-12 md:max-w-screen-2xl lg:py-20">
@@ -16,12 +19,9 @@ function HeroSection() {
 
           {/* CTA */}
           <div className="flex justify-center md:justify-start">
-            <Link
-              to="/signup"
-              className="rounded-md bg-primary px-4 py-2 text-base font-semibold text-white transition hover:bg-primary-dark sm:px-6 sm:py-3 sm:text-lg"
-            >
+            <Button onClick={openSignUp} size="lg">
               Start Riffing
-            </Link>
+            </Button>
           </div>
         </div>
 
