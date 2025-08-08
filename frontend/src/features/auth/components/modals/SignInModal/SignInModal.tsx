@@ -7,6 +7,7 @@ export interface SignInModalProps {
   onClose: () => void;
   onSwitchToSignUp: () => void;
   onGoogle?: () => void;
+  onSuccess?: () => void;
 }
 
 function SignInModal({
@@ -14,7 +15,9 @@ function SignInModal({
   onClose,
   onSwitchToSignUp,
   onGoogle,
+  onSuccess,
 }: SignInModalProps) {
+  const handleSuccess = onSuccess ?? onClose;
   return (
     <AuthModal
       variant="signin"
@@ -22,7 +25,7 @@ function SignInModal({
       onClose={onClose}
       onGoogle={onGoogle}
     >
-      <SignInForm />
+      <SignInForm onSuccess={handleSuccess} />
       <InlineLink
         onClick={onSwitchToSignUp}
         className="mt-4 block text-center text-base"

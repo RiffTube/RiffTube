@@ -11,7 +11,7 @@ vi.mock('../../../../../player/components/YouTubePlayer', () => ({
     videoId: string;
     onTime: (t: number) => void;
   }) => {
-    onTime(25);
+    onTime(25); // call immediately
     return <div data-testid="youtube-player">{videoId}</div>;
   },
 }));
@@ -19,11 +19,12 @@ vi.mock('../../../../../player/components/YouTubePlayer', () => ({
 vi.mock('../../../../../riffs/components/RiffOverlay', () => ({
   default: ({
     riffs,
+    currentTime,
   }: {
     riffs: Array<{ id: string; text: string; highlighted: boolean }>;
-    currentTime: number; // include currentTime to mirror real props
+    currentTime: number;
   }) => (
-    <div data-testid="riff-overlay">
+    <div data-testid="riff-overlay" data-current-time={currentTime}>
       {riffs.map(r => (
         <span key={r.id} data-highlighted={String(r.highlighted)}>
           {r.text}
@@ -33,11 +34,12 @@ vi.mock('../../../../../riffs/components/RiffOverlay', () => ({
   ),
 }));
 
-describe('VideoCard', () => {
+describe('<VideoCard />', () => {
   it('renders the YouTubePlayer with the provided videoId', () => {
     render(
       <VideoCard riffs={dummyRiffs} selectedId={null} videoId="MY_CUSTOM_ID" />,
     );
+
     expect(screen.getByTestId('youtube-player')).toHaveTextContent(
       'MY_CUSTOM_ID',
     );
@@ -45,6 +47,7 @@ describe('VideoCard', () => {
 
   it('uses the fallback videoId when none is provided', () => {
     render(<VideoCard riffs={dummyRiffs} selectedId={null} />);
+
     expect(screen.getByTestId('youtube-player')).toHaveTextContent(
       'dQw4w9WgXcQ',
     );
@@ -52,6 +55,7 @@ describe('VideoCard', () => {
 
   it('renders an empty overlay when no riffs are provided', () => {
     render(<VideoCard riffs={[]} selectedId={null} />);
+
     const overlay = screen.getByTestId('riff-overlay');
     expect(overlay.children.length).toBe(0);
   });

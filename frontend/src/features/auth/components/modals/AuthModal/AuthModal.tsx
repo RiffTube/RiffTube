@@ -22,6 +22,7 @@ function AuthModal({
   error = null,
   children,
   className = '',
+  busy = false,
 }: AuthModalProps) {
   /* ----- strings that change between signin / signup ----- */
   const isSignUp = variant === 'signup';
@@ -41,8 +42,7 @@ function AuthModal({
             mode={variant}
             provider="google"
             onClick={onGoogle}
-            // TODO: pass busy state into authModal and then pass it into the disabled prop of OAuthButton i.e. disabled={busy}
-            disabled
+            disabled={busy}
           >
             {oAuthTxt}
           </OAuthButton>

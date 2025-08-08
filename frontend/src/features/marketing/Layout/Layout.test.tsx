@@ -1,6 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { mockAuthState } from '@/testUtils/mockUseAuth'; // adjust path if needed
 import Layout from './Layout';
+
+mockAuthState();
 
 describe('<Layout />', () => {
   it('renders the Header component in a banner landmark', () => {

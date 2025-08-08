@@ -4,28 +4,32 @@ Rails.application.routes.draw do
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
       # ─── USERS ────────────────────────────────────────────
-      post 'signup', to: 'users#signup',  as: :signup     # POST   /api/v1/signup
-      get  'me',     to: 'users#me',      as: :dashboard  # GET    /api/v1/me
+      post 'signup', to: 'users#signup' # POST   /api/v1/signup
+      get  'me',     to: 'users#me', as: :dashboard # GET /api/v1/me
 
       # ─── SESSIONS ─────────────────────────────────────────
-      post   'login',  to: 'sessions#create'   # POST   /api/v1/login
-      delete 'logout', to: 'sessions#destroy'  # DELETE /api/v1/logout
+      post   'login',  to: 'sessions#create'     # POST   /api/v1/login
+      delete 'logout', to: 'sessions#destroy'    # DELETE /api/v1/logout
 
       # ─── OAUTH ───────────────────────────────────────────
       get 'auth/google_oauth2',          to: 'sessions#google_oauth2_redirect'
       get 'auth/google_oauth2/callback', to: 'sessions#google_oauth2_callback'
+      get 'auth/failure',                to: 'sessions#failure' # namespaced failure
 
       # ─── CONFIRMATIONS ───────────────────────────────────
-      resources :confirmations, only: [:create] # POST   /api/v1/confirmations
-      get 'confirm', to: 'confirmations#confirm', as: :confirm # GET    /api/v1/confirm?token=XYZ
+      resources :confirmations, only: [:create] # POST /api/v1/confirmations
+      get 'confirm', to: 'confirmations#confirm', as: :confirm # GET /api/v1/confirm?token=XYZ
 
       # ─── PASSWORD RESETS ─────────────────────────────────
       resources :password_resets,
                 only: %i[create update],
                 param: :token,
                 constraints: { token: /\h{40}/ }
-      # POST   /api/v1/password_resets
-      # PATCH  /api/v1/password_resets/:token
+      # POST  /api/v1/password_resets
+      # PATCH /api/v1/password_resets/:token
     end
   end
+
+  # also catch OmniAuth's default /auth/failure (non-namespaced)
+  get '/auth/failure', to: 'api/v1/sessions#failure'
 end

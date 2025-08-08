@@ -1,6 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { mockAuthState } from '@/testUtils/mockUseAuth';
 import Header from './Header';
+
+mockAuthState();
 
 describe('<Header />', () => {
   it('renders a <header> banner and a <nav>', () => {
@@ -21,7 +24,6 @@ describe('<Header />', () => {
       </MemoryRouter>,
     );
 
-    // Try by accessible name first, then fallback to href lookup
     const homeLink =
       screen.queryByRole('link', { name: /home/i }) ??
       screen.getAllByRole('link').find(l => l.getAttribute('href') === '/');
@@ -36,6 +38,7 @@ describe('<Header />', () => {
 
   it('renders a "Sign In" button and calls openSignIn when clicked', () => {
     const mockOpen = vi.fn();
+
     render(
       <MemoryRouter>
         <Header openSignIn={mockOpen} />
