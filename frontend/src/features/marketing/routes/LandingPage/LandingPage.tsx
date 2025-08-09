@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import SignInModal from '@/features/auth/components/modals/SignInModal/SignInModal';
 import SignUpModal from '@/features/auth/components/modals/SignUpModal/SignUpModal';
+import { launchGoogleOAuth } from '@/features/auth/services/launchGoogleOAuth';
 import Layout from '../../Layout';
 import FAQSection from './components/FAQSection/FAQSection';
 import HeroSection from './components/HeroSection/HeroSection';
@@ -31,17 +32,17 @@ function LandingPage() {
       <HeroSection openSignUp={openSignUp} />
       <HowItWorksSection />
       <FAQSection />
-
       <SignUpModal
         isOpen={isSignUpOpen}
         onClose={closeSignUp}
         onSwitchToSignIn={switchToSignIn}
+        onGoogle={() => launchGoogleOAuth('signup')}
       />
-
       <SignInModal
         isOpen={isSignInOpen}
         onClose={closeSignIn}
         onSwitchToSignUp={switchToSignUp}
+        onGoogle={() => launchGoogleOAuth('signin')}
       />
     </Layout>
   );

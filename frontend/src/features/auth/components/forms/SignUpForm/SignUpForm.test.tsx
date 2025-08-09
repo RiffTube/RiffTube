@@ -6,8 +6,6 @@ import { PASSWORD_MIN_LENGTH } from '@/features/auth/constants';
 import { mockAuthSignUp } from '@/testUtils/mockUseAuth';
 import SignUpForm from './SignUpForm';
 
-vi.mock('@/features/auth/hooks/useAuth', () => ({ useAuth: vi.fn() }));
-
 describe('<SignUpForm />', () => {
   it('renders inputs and a disabled submit button initially', () => {
     mockAuthSignUp();

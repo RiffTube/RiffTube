@@ -2,22 +2,16 @@ import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
+import { mockAuthSignUp } from '@/testUtils/mockUseAuth'; // adjust path if needed
 import SignUpModal from './SignUpModal';
 
-let signUpMock: ReturnType<typeof vi.fn>;
-let loadingFlag = false;
-let errorFlag: string | null = null;
+const signUpMock = vi.fn<() => Promise<void>>().mockResolvedValue(undefined);
 
-vi.mock('@/features/auth/hooks/useAuth', () => ({
-  useAuth: () => ({
-    user: null,
-    loading: loadingFlag,
-    error: errorFlag,
-    signUp: signUpMock,
-    signIn: vi.fn(),
-    signOut: vi.fn(),
-  }),
-}));
+mockAuthSignUp({
+  signUp: signUpMock,
+  loading: false,
+  error: null,
+});
 
 const renderModal = (extraProps = {}) =>
   render(
@@ -30,12 +24,6 @@ const renderModal = (extraProps = {}) =>
   );
 
 describe('<SignUpModal />', () => {
-  afterEach(() => {
-    signUpMock = vi.fn();
-    loadingFlag = false;
-    errorFlag = null;
-  });
-
   it('renders heading, OAuth button, inputs, copy, submit & switch link', () => {
     renderModal();
 

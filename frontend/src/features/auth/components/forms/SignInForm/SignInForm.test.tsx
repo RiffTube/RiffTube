@@ -5,8 +5,6 @@ import { vi } from 'vitest';
 import { mockAuthSignIn } from '@/testUtils/mockUseAuth'; // adjust path if needed
 import SignInForm from './SignInForm';
 
-vi.mock('@/features/auth/hooks/useAuth', () => ({ useAuth: vi.fn() }));
-
 describe('<SignInForm />', () => {
   it('renders inputs and an initially disabled submit button', () => {
     mockAuthSignIn();

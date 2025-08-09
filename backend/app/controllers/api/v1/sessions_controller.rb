@@ -7,23 +7,28 @@ module Api
       include Authenticatable
       include ResponseRenderable
 
-      # ────────────────────────────────────────────
-
       def google_oauth2_redirect
-        redirect_to '/auth/google_oauth2'
+        qs   = request.query_string.presence
+        path = '/auth/google_oauth2'
+        path = "#{path}?#{qs}" if qs
+        redirect_to path, only_path: true
       end
 
       def google_oauth2_callback
         user = find_or_init_user
+        return log_in_and_redirect(user) if user.persisted?
 
-        if user.persisted?
-          log_in_and_redirect user
-        elsif user.save
-          setup_new_user user, auth.info
-          log_in_and_redirect user
-        else
-          render_unprocessable(user)
-        end
+        build_from_oauth(user, auth.info)
+        return render_unprocessable(user) unless user.save
+
+        log_in_and_redirect(user)
+      end
+
+      def failure
+        redirect_to_frontend(
+          '/auth/failure',
+          params: { message: params[:message].to_s, strategy: params[:strategy].to_s }
+        )
       end
 
       def create
@@ -43,6 +48,14 @@ module Api
 
       private
 
+      def build_from_oauth(user, info)
+        email         = info.email.to_s
+        user.email    = email
+        user.name     = info.name
+        user.username = email.split('@').first
+        user.password = SecureRandom.hex(16)
+      end
+
       def session_params
         params.require(:user).permit(:login, :password)
       end
@@ -52,9 +65,7 @@ module Api
       end
 
       def find_user_by_login(login)
-        User.active
-            .where('LOWER(email) = :l OR LOWER(username) = :l', l: login)
-            .first
+        User.active.where('LOWER(email) = :l OR LOWER(username) = :l', l: login).first
       end
 
       def auth = request.env['omniauth.auth']
@@ -63,19 +74,11 @@ module Api
         User.active.find_or_initialize_by(provider: 'google', uid: auth.uid)
       end
 
-      def setup_new_user(user, info)
-        user.email    = info.email
-        user.name     = info.name
-        user.username = info.email.split('@').first
-        user.password = SecureRandom.hex(16)
-      end
-
       def log_in_and_redirect(user)
         log_in(user)
-        redirect_to controller: :users, action: :me
+        redirect_to_frontend_success
       end
 
-      # ----- predicates & error renderers (unchanged) -----
       def blank_credentials?
         normalized_login.blank? || session_params[:password].blank?
       end
