@@ -48,7 +48,7 @@ export default function ExploreRecommendationsCard({
 
                 {/* text */}
                 <div className="min-w-0">
-                  <p className="line-clamp-2 [display:-webkit-box] overflow-hidden text-base leading-snug font-medium [-webkit-box-orient:vertical] [-webkit-line-clamp:2] sm:text-sm">
+                  <p className="line-clamp-2 text-base leading-snug font-medium sm:text-sm">
                     {r.title}
                   </p>
                   <p className="mt-0.5 text-xs leading-snug text-white/60">

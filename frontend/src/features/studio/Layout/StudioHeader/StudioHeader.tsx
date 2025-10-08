@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import TvIcon from '@/assets/rifftube-logo.svg?react';
 import Button from '@/components/Button';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { dispatchOpenCreate } from '@/helpers/events';
 
 export default function StudioHeader({
   onOpenMobileNav,
@@ -52,9 +53,7 @@ export default function StudioHeader({
           <div className="flex items-center gap-3">
             <Button
               className="hidden md:inline"
-              onClick={() =>
-                window.dispatchEvent(new CustomEvent('open-create-project'))
-              }
+              onClick={() => dispatchOpenCreate()} // create project
             >
               Create project
             </Button>

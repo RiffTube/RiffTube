@@ -4,11 +4,11 @@
 
 @theme {
   /* colors */
-  --color-primary: #7c2020; /* deep cinema red */
+  --color-primary: #7c2020;
   --color-primary-dark: #5a2017;
 
   --color-flicker-white: #f5f5eb; /* warm off-white */
-  --color-popcorn-butter: #deb665; /* buttery yellow */
+  --color-popcorn-butter: #deb665;
 
   --color-reel-dust: #1f2123;
   --color-backstage: #0b0d0f;
@@ -31,8 +31,8 @@
   --font-sans: 'Work Sans', sans-serif;
   --font-serif: 'Limelight', serif;
 
-  --breakpoint-md: 48rem; /* 768px */
-  --breakpoint-lg: 64rem; /* 1024px */
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
 }
 
 @layer base, components, utilities;

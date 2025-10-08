@@ -12,8 +12,7 @@ function AuthSuccessPage() {
       return;
     }
 
-    refreshMe().finally(() => nav('/demo')); // TODO: redirect to the live editor
-
+    refreshMe().finally(() => nav('/dashboard'));
   }, [isAuthenticated, refreshMe, nav]);
 
   return <p className="mt-20 text-center">Logging you in…</p>;

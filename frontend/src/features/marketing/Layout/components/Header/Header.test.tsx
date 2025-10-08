@@ -40,7 +40,9 @@ describe('<Header />', () => {
     expect(svg).toBeInTheDocument();
     expect(svg).toHaveAttribute('aria-hidden', 'true');
 
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /sign in/i }),
+    ).toBeInTheDocument();
   });
 
   it('renders a "Sign In" button and calls openSignIn when clicked', () => {
@@ -77,7 +79,9 @@ describe('<Header />', () => {
     // avatar + username visible, no "Sign In"
     expect(screen.getByAltText(/avatar/i)).toBeInTheDocument();
     expect(screen.getByText('Joss')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /sign in/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /sign in/i }),
+    ).not.toBeInTheDocument();
 
     // sign out works
     fireEvent.click(screen.getByRole('button', { name: /sign out/i }));
