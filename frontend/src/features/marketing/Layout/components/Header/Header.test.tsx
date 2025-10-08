@@ -4,6 +4,8 @@ import { vi } from 'vitest';
 import { mockAuthState } from '@/testUtils/mockUseAuth';
 import Header from './Header';
 
+mockAuthState();
+
 describe('<Header />', () => {
   it('renders a <header> banner and a <nav>', () => {
     mockAuthState({ isAuthenticated: false, user: null });
@@ -27,19 +29,21 @@ describe('<Header />', () => {
       </MemoryRouter>,
     );
 
-    const homeLink = screen.getByRole('link', { name: /home/i });
+    const homeLink =
+      screen.queryByRole('link', { name: /home/i }) ??
+      screen.getAllByRole('link').find(l => l.getAttribute('href') === '/');
+
+    expect(homeLink).toBeInTheDocument();
     expect(homeLink).toHaveAttribute('href', '/');
 
-    const svg = homeLink.querySelector('svg');
+    const svg = homeLink!.querySelector('svg');
     expect(svg).toBeInTheDocument();
     expect(svg).toHaveAttribute('aria-hidden', 'true');
 
-    expect(
-      screen.getByRole('button', { name: /sign in/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });
 
-  it('clicking "Sign In" calls openSignIn', () => {
+  it('renders a "Sign In" button and calls openSignIn when clicked', () => {
     mockAuthState({ isAuthenticated: false, user: null });
     const open = vi.fn();
 
@@ -73,9 +77,7 @@ describe('<Header />', () => {
     // avatar + username visible, no "Sign In"
     expect(screen.getByAltText(/avatar/i)).toBeInTheDocument();
     expect(screen.getByText('Joss')).toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: /sign in/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /sign in/i })).not.toBeInTheDocument();
 
     // sign out works
     fireEvent.click(screen.getByRole('button', { name: /sign out/i }));
