@@ -9,45 +9,52 @@ interface HeaderProps {
 export default function Header({ openSignIn }: HeaderProps) {
   const { user, isAuthenticated, signOut } = useAuth();
 
+  const logoHref = isAuthenticated && user ? '/dashboard' : '/';
+  const logoLabel = isAuthenticated && user ? 'Go to dashboard' : 'Home';
+
   return (
-    <header className="bg-backstage">
-      <div className="container mx-auto max-w-screen-2xl px-4 py-4">
+    <header className="border-b border-outline bg-backstage">
+      <div className="mx-auto w-full max-w-7xl px-4 py-3">
         <nav
-          className="mx-auto flex w-full items-center justify-between"
+          className="flex w-full items-center justify-between"
           aria-label="Main navigation"
         >
-          <Link to="/" aria-label="Home">
+          <Link
+            to={logoHref}
+            aria-label={logoLabel}
+            className="inline-flex items-center gap-2"
+          >
             <TvIcon
-              className="h-8 w-auto fill-current text-white"
+              className="h-7 w-auto fill-current text-flicker-white"
               aria-hidden="true"
             />
           </Link>
 
           {isAuthenticated && user ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <img
                 src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
                   user.username,
                 )}&background=random`}
                 alt="avatar"
-                className="h-8 w-8 rounded-full"
+                className="h-8 w-8 rounded-full ring-1 ring-outline"
               />
-              <span className="text-white">{user.username}</span>
+              <span className="text-flicker-white/90">{user.username}</span>
               <button
                 type="button"
                 onClick={signOut}
-                className="cursor-pointer text-lg font-semibold text-white transition-colors hover:text-primary"
+                className="cursor-pointer text-sm font-semibold text-flicker-white transition-colors hover:text-popcorn-butter"
               >
-                Sign Out
+                Sign out
               </button>
             </div>
           ) : (
             <button
               type="button"
               onClick={openSignIn}
-              className="cursor-pointer text-lg font-semibold text-white transition-colors hover:text-primary"
+              className="cursor-pointer text-sm font-semibold text-flicker-white transition-colors hover:text-popcorn-butter"
             >
-              Sign In
+              Sign in
             </button>
           )}
         </nav>

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { vi } from 'vitest';
 import { mockAuthState } from '@/testUtils/mockUseAuth';
 import Header from './Header';
 
@@ -7,6 +8,8 @@ mockAuthState();
 
 describe('<Header />', () => {
   it('renders a <header> banner and a <nav>', () => {
+    mockAuthState({ isAuthenticated: false, user: null });
+
     render(
       <MemoryRouter>
         <Header openSignIn={() => {}} />
@@ -17,7 +20,9 @@ describe('<Header />', () => {
     expect(screen.getByRole('navigation')).toBeInTheDocument();
   });
 
-  it('renders a home link pointing to "/" with the TV icon inside', () => {
+  it('when signed OUT: logo links to "/" and shows Sign In', () => {
+    mockAuthState({ isAuthenticated: false, user: null });
+
     render(
       <MemoryRouter>
         <Header openSignIn={() => {}} />
@@ -34,21 +39,52 @@ describe('<Header />', () => {
     const svg = homeLink!.querySelector('svg');
     expect(svg).toBeInTheDocument();
     expect(svg).toHaveAttribute('aria-hidden', 'true');
+
+    expect(
+      screen.getByRole('button', { name: /sign in/i }),
+    ).toBeInTheDocument();
   });
 
   it('renders a "Sign In" button and calls openSignIn when clicked', () => {
-    const mockOpen = vi.fn();
+    mockAuthState({ isAuthenticated: false, user: null });
+    const open = vi.fn();
 
     render(
       <MemoryRouter>
-        <Header openSignIn={mockOpen} />
+        <Header openSignIn={open} />
       </MemoryRouter>,
     );
 
-    const btn = screen.getByRole('button', { name: /sign in/i });
-    expect(btn).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    expect(open).toHaveBeenCalledTimes(1);
+  });
 
-    fireEvent.click(btn);
-    expect(mockOpen).toHaveBeenCalledTimes(1);
+  it('when signed IN: logo links to "/dashboard" and shows avatar + Sign Out', () => {
+    const signOut = vi.fn();
+    mockAuthState({
+      isAuthenticated: true,
+      user: { id: 'u1', username: 'Joss', email: 'joss@example.com' },
+      signOut,
+    });
+
+    render(
+      <MemoryRouter>
+        <Header openSignIn={() => {}} />
+      </MemoryRouter>,
+    );
+
+    const logoLink = screen.getByRole('link', { name: /go to dashboard/i });
+    expect(logoLink).toHaveAttribute('href', '/dashboard');
+
+    // avatar + username visible, no "Sign In"
+    expect(screen.getByAltText(/avatar/i)).toBeInTheDocument();
+    expect(screen.getByText('Joss')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /sign in/i }),
+    ).not.toBeInTheDocument();
+
+    // sign out works
+    fireEvent.click(screen.getByRole('button', { name: /sign out/i }));
+    expect(signOut).toHaveBeenCalledTimes(1);
   });
 });

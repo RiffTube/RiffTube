@@ -33,7 +33,7 @@ const variantMap: Record<Variant, string> = {
     'disabled:bg-[#333332] disabled:text-[#aaaaaa] disabled:opacity-40 disabled:cursor-not-allowed ' +
     'focus:outline-none focus:ring-2 focus:ring-reel-dust/50',
   lightMode:
-    'bg-white text-gray-900 hover:bg-gray-50 ' +
+    'bg-white text-gray-900 hover:bg-gray-200 ' +
     'disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed ' +
     'focus:outline-none focus:ring-2 focus:ring-gray-200 ' +
     'transition-colors duration-150',

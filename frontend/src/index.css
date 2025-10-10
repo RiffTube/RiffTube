@@ -1,27 +1,38 @@
 @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Limelight&display=swap');
-
 @import 'tailwindcss';
 
 @theme {
   /* colors */
   --color-primary: #7c2020;
   --color-primary-dark: #5a2017;
-  --color-flicker-white: #f5f5eb;
-  --color-popcorn-butter: #deb665;
-  --color-reel-dust: #262625;
-  --color-backstage: #020a06;
-  --color-vintage-teal: #263f40;
-  --color-vintage-teal-dark: #1f2a2c;
-  --color-silver-dust: #aaaaaa;
-  --color-smoke: #606060;
 
-  /* fonts */
+  --color-flicker-white: #f5f5eb; /* warm off-white */
+  --color-popcorn-butter: #deb665;
+
+  --color-reel-dust: #1f2123;
+  --color-backstage: #0b0d0f;
+
+  --color-vintage-teal: #22262b; /* legacy name, neutralized */
+  --color-vintage-teal-dark: #1a1e23;
+
+  --color-silver-dust: #b6beca;
+  --color-smoke: #7b8491; /* secondary text */
+
+  --color-surface-1: #0f1113; /* page bg layers */
+  --color-surface-2: #15181b; /* card bg */
+  --color-surface-3: #1c2024; /* skeleton / inset */
+
+  --color-outline: #23272d;
+  --color-strong-outline: #2b3138;
+
+  --color-success: #2fa37c;
+
   --font-sans: 'Work Sans', sans-serif;
   --font-serif: 'Limelight', serif;
 
-  --breakpoint-md: 48rem; /* 768px */
-  --breakpoint-lg: 64rem; /* 1024px */
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
 }
 
 @layer base, components, utilities;
