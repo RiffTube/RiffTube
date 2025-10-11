@@ -96,10 +96,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     abortController.current = new AbortController();
 
-    if (!isInitialized) {
-      setLoading(true);
-    }
-
     try {
       const res = await fetch('/api/v1/me', {
         credentials: 'include',
@@ -126,9 +122,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsInitialized(true);
       abortController.current = null;
     }
-  }, [isInitialized]);
+  }, []);
 
   useEffect(() => {
+    // moved this and the dependency from refreshMe
+    if (!isInitialized) {
+      setLoading(true);
+    }
+
     void refreshMe();
 
     return () => {
@@ -136,7 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         abortController.current.abort();
       }
     };
-  }, [refreshMe]);
+  }, [refreshMe, isInitialized]);
 
   const clearError = useCallback(() => setError(null), []);
 
