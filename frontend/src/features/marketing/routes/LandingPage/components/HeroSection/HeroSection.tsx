@@ -8,11 +8,11 @@ interface HeroSectionProps {
 }
 
 function HeroSection({ openSignUp }: HeroSectionProps) {
-  const { isAuthenticated } = useAuth();
+  const { state } = useAuth();
   const navigate = useNavigate();
 
   const handleCta = () => {
-    if (isAuthenticated) {
+    if (state === 'authorized') {
       navigate('/dashboard');
     } else {
       openSignUp();

@@ -7,10 +7,10 @@ interface HeaderProps {
 }
 
 export default function Header({ openSignIn }: HeaderProps) {
-  const { user, isAuthenticated, signOut } = useAuth();
+  const { user, state, signOut } = useAuth();
 
-  const logoHref = isAuthenticated && user ? '/dashboard' : '/';
-  const logoLabel = isAuthenticated && user ? 'Go to dashboard' : 'Home';
+  const logoHref = state === 'authorized' && user ? '/dashboard' : '/';
+  const logoLabel = state === 'authorized' && user ? 'Go to dashboard' : 'Home';
 
   return (
     <header className="border-b border-outline bg-backstage">
@@ -30,7 +30,7 @@ export default function Header({ openSignIn }: HeaderProps) {
             />
           </Link>
 
-          {isAuthenticated && user ? (
+          {state === 'authorized' && user ? (
             <div className="flex items-center gap-3">
               <img
                 src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
