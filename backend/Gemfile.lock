@@ -269,7 +269,7 @@ GEM
     unicode-display_width (3.1.4)
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
-    uri (1.0.3)
+    uri (1.0.4)
     uuidtools (3.0.0)
     version_gem (1.1.7)
     websocket-driver (0.7.7)
