@@ -1,6 +1,8 @@
 const YT_REGEX =
   /https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=[\w-]+|shorts\/[\w-]+|live\/[\w-]+|embed\/[\w-]+)|youtu\.be\/[\w-]+)/i;
 
+const YT_ID_REGEX = /^[\w-]{11}$/;
+
 const YT_OTHER_PREFIXES = ['/shorts/', '/live/', '/embed/'] as const;
 
 function isYouTubeHost(host: string): boolean {
@@ -31,4 +33,20 @@ export function candidateYouTubeUrl(raw: string): string | null {
   // Extract from free text
   const m = value.match(YT_REGEX);
   return m ? m[0] : null;
+}
+
+/** Returns the 11-char video id from a bare id or a YouTube URL/free text, or null. */
+export function extractYouTubeVideoId(raw: string): string | null {
+  const value = raw.trim();
+  if (YT_ID_REGEX.test(value)) return value;
+
+  const url = candidateYouTubeUrl(value);
+  if (!url) return null;
+
+  const u = new URL(url);
+  if (u.hostname.includes('youtu.be')) return u.pathname.slice(1) || null;
+  if (u.pathname === '/watch') return u.searchParams.get('v');
+
+  const prefix = YT_OTHER_PREFIXES.find(p => u.pathname.startsWith(p));
+  return prefix ? u.pathname.slice(prefix.length) : null;
 }

@@ -1,6 +1,6 @@
 export interface CreateProjectPayload {
   title: string;
-  videoUrl: string;
+  videoId: string;
 }
 
 export interface ProjectDTO {
@@ -27,7 +27,8 @@ export async function createProject(
       project: {
         title: payload.title,
         video_host: 'youtube',
-        video_url: payload.videoUrl,
+        video_id: payload.videoId,
+        video_url: `https://www.youtube.com/watch?v=${payload.videoId}`,
       },
     }),
   });
