@@ -15,7 +15,7 @@ export default function SignUpForm({
   onSuccess,
   className = '',
 }: SignUpFormProps) {
-  const { signUp, loading, error, clearError } = useAuth();
+  const { signUp, state, error, clearError } = useAuth();
 
   const [username, setUsername] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -33,7 +33,7 @@ export default function SignUpForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isFormInvalid || loading) return;
+    if (isFormInvalid || state === 'loading') return;
 
     try {
       await signUp(usernameTrim, emailTrim, password);
@@ -108,12 +108,12 @@ export default function SignUpForm({
       </p>
 
       <Button
-        disabled={loading || isFormInvalid}
+        disabled={state === 'loading' || isFormInvalid}
         type="submit"
         className="mt-2 w-full text-2xl"
         size="lg"
       >
-        {loading ? 'Signing up…' : 'Sign up'}
+        {state === 'loading' ? 'Signing up…' : 'Sign up'}
       </Button>
     </form>
   );

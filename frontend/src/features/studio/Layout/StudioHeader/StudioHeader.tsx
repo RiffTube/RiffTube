@@ -9,7 +9,7 @@ export default function StudioHeader({
 }: {
   onOpenMobileNav: () => void;
 }) {
-  const { user, isAuthenticated, signOut } = useAuth();
+  const { user, state, signOut } = useAuth();
   const displayName = user?.username || user?.email || 'User';
 
   return (
@@ -40,8 +40,8 @@ export default function StudioHeader({
 
             <Link
               className="hidden md:inline"
-              to={isAuthenticated ? '/dashboard' : '/'}
-              aria-label={isAuthenticated ? 'Go to dashboard' : 'Home'}
+              to={state === 'authorized' ? '/dashboard' : '/'}
+              aria-label={state === 'authorized' ? 'Go to dashboard' : 'Home'}
             >
               <TvIcon
                 className="h-7 w-auto fill-current text-white"
@@ -58,7 +58,7 @@ export default function StudioHeader({
               Create project
             </Button>
 
-            {isAuthenticated ? (
+            {state === 'authorized' ? (
               <div className="hidden items-center gap-3 md:flex">
                 <Link
                   to="/studio/settings"
@@ -90,8 +90,8 @@ export default function StudioHeader({
 
           <Link
             className="md:hidden"
-            to={isAuthenticated ? '/dashboard' : '/'}
-            aria-label={isAuthenticated ? 'Go to dashboard' : 'Home'}
+            to={state === 'authorized' ? '/dashboard' : '/'}
+            aria-label={state === 'authorized' ? 'Go to dashboard' : 'Home'}
           >
             <TvIcon
               className="h-7 w-auto fill-current text-white"

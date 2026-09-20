@@ -13,7 +13,7 @@ export default function SignInForm({
   onSuccess,
   className = '',
 }: SignInFormProps) {
-  const { signIn, loading, error, clearError } = useAuth();
+  const { signIn, state, error, clearError } = useAuth();
 
   const [login, setLogin] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -23,7 +23,7 @@ export default function SignInForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isFormInvalid || loading) return;
+    if (isFormInvalid || state === 'loading') return;
 
     try {
       await signIn(login.trim(), password.trim());
@@ -73,12 +73,12 @@ export default function SignInForm({
       )}
 
       <Button
-        disabled={loading || isFormInvalid}
+        disabled={state === 'loading' || isFormInvalid}
         type="submit"
         className="mt-4 w-full text-2xl"
         size="lg"
       >
-        {loading ? 'Signing in…' : 'Sign in'}
+        {state === 'loading' ? 'Signing in…' : 'Sign in'}
       </Button>
     </form>
   );

@@ -36,10 +36,11 @@ function isHttpishError(err: unknown): err is HttpishError {
 
 interface AuthContextShape {
   user: User | null;
-  loading: boolean;
   error: string | null;
-  isAuthenticated: boolean;
-  isInitialized: boolean;
+  //loading: boolean;
+  //isAuthenticated: boolean;
+  //isInitialized: boolean;
+  state: 'loading' | 'authorized' | 'unauthorized' | 'error';
   clearError: () => void;
   signIn: (login: string, password: string) => Promise<void>;
   signUp: (username: string, email: string, password: string) => Promise<void>;
@@ -84,9 +85,12 @@ function normalizeAuthError(err: unknown): string {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  //const [loading, setLoading] = useState<boolean>(false);
+  //const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const [state, setState] = useState<
+    'loading' | 'authorized' | 'unauthorized' | 'error'
+  >('loading');
   const abortController = useRef<AbortController | null>(null);
 
   const refreshMe = useCallback(async () => {
@@ -95,10 +99,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     abortController.current = new AbortController();
-
-    if (!isInitialized) {
-      setLoading(true);
-    }
 
     try {
       const res = await fetch('/api/v1/me', {
@@ -109,10 +109,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (res.ok) {
         const json = (await res.json()) as ApiUserResponse;
         setUser(json.user);
+        setState('authorized');
       } else if (res.status === 401) {
         setUser(null);
+        setState('unauthorized');
       } else {
         setUser(null);
+        setState('error');
         console.warn(`Auth check failed with status: ${res.status}`);
       }
     } catch (err: unknown) {
@@ -120,16 +123,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       setUser(null);
+      setState('error');
       console.error('Auth check failed:', err);
     } finally {
-      setLoading(false);
-      setIsInitialized(true);
+      //setLoading(false);
+      //setIsInitialized(true);
       abortController.current = null;
     }
-  }, [isInitialized]);
+  }, []);
 
   useEffect(() => {
+    // moved this and the dependency from refreshMe
+    //if (!isInitialized) {
+    //setLoading(true);
+    // only needs to call refreshMe if not initialized
     void refreshMe();
+    //}
 
     return () => {
       if (abortController.current) {
@@ -148,16 +157,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     setError(null);
-    setLoading(true);
+    //setLoading(true);
+    setState('loading');
     try {
       const json = await apiSignIn({ login: login.trim(), password });
       setUser(json.user);
+      setState('authorized');
     } catch (err: unknown) {
       const errorMsg = normalizeAuthError(err);
       setError(errorMsg);
+      setState('error');
       throw new Error(errorMsg);
     } finally {
-      setLoading(false);
+      //setLoading(false);
     }
   }, []);
 
@@ -176,7 +188,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       setError(null);
-      setLoading(true);
+      //setLoading(true);
+      setState('loading');
       try {
         const json = await apiSignUp({
           username: username.trim(),
@@ -184,19 +197,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           password,
         });
         setUser(json.user);
+        setState('authorized');
       } catch (err: unknown) {
         const errorMsg = normalizeAuthError(err);
         setError(errorMsg);
+        setState('error');
         throw new Error(errorMsg);
       } finally {
-        setLoading(false);
+        //setLoading(false);
       }
     },
     [],
   );
 
   const signOut = useCallback(async () => {
-    setLoading(true);
+    //setLoading(true);
+    setState('loading');
     try {
       const response = await fetch('/api/v1/logout', {
         method: 'DELETE',
@@ -204,6 +220,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       setUser(null);
+      setState('unauthorized');
 
       if (!response.ok) {
         console.warn(`Logout request failed with status: ${response.status}`);
@@ -211,17 +228,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       console.error('Logout request failed:', err);
     } finally {
-      setLoading(false);
+      //setLoading(false);
     }
   }, []);
 
   const value = useMemo<AuthContextShape>(
     () => ({
       user,
-      loading,
       error,
-      isAuthenticated: Boolean(user && isInitialized),
-      isInitialized,
+      //loading,
+      //isAuthenticated: Boolean(user && isInitialized),
+      //isInitialized,
+      state,
       clearError,
       signIn,
       signUp,
@@ -230,9 +248,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }),
     [
       user,
-      loading,
       error,
-      isInitialized,
+      //loading,
+      //isInitialized,
+      state,
       clearError,
       signIn,
       signUp,
