@@ -1,8 +1,7 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import TvIcon from '@/assets/rifftube-logo.svg?react';
 import Button from '@/components/Button';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { dispatchOpenCreate } from '@/helpers/events';
 
 export default function StudioHeader({
   onOpenMobileNav,
@@ -10,6 +9,7 @@ export default function StudioHeader({
   onOpenMobileNav: () => void;
 }) {
   const { user, isAuthenticated, signOut } = useAuth();
+  const navigate = useNavigate();
   const displayName = user?.username || user?.email || 'User';
 
   return (
@@ -53,7 +53,7 @@ export default function StudioHeader({
           <div className="flex items-center gap-3">
             <Button
               className="hidden md:inline"
-              onClick={() => dispatchOpenCreate()} // create project
+              onClick={() => navigate('/dashboard/projects/new')}
             >
               Create project
             </Button>
