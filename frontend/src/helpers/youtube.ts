@@ -43,10 +43,18 @@ export function extractYouTubeVideoId(raw: string): string | null {
   const url = candidateYouTubeUrl(value);
   if (!url) return null;
 
-  const u = new URL(url);
-  if (u.hostname.includes('youtu.be')) return u.pathname.slice(1) || null;
-  if (u.pathname === '/watch') return u.searchParams.get('v');
+  const isValidId = (id: string | null): id is string =>
+    id !== null && YT_ID_REGEX.test(id);
+  if (u.hostname.includes('youtu.be')) {
+    const id = u.pathname.slice(1);
+    return isValidId(id) ? id : null;
+  }
+  if (u.pathname === '/watch') {
+    const id = u.searchParams.get('v');
+    return isValidId(id) ? id : null;
+  }
 
   const prefix = YT_OTHER_PREFIXES.find(p => u.pathname.startsWith(p));
-  return prefix ? u.pathname.slice(prefix.length) : null;
+  const id = prefix ? u.pathname.slice(prefix.length) : null;
+  return isValidId(id) ? id : null;
 }
