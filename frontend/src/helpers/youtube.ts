@@ -43,6 +43,7 @@ export function extractYouTubeVideoId(raw: string): string | null {
   const url = candidateYouTubeUrl(value);
   if (!url) return null;
 
+  const u = new URL(url);
   const isValidId = (id: string | null): id is string =>
     id !== null && YT_ID_REGEX.test(id);
   if (u.hostname.includes('youtu.be')) {
