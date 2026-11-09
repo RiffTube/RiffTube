@@ -25,7 +25,7 @@ gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
 gem 'bootsnap', require: false
 
 # OAuth
-gem 'omniauth', '~> 2.1' # maybe not needed?
+gem 'omniauth', '~> 2.2' # maybe not needed?
 gem 'omniauth-google-oauth2', '~> 1.1'
 
 group :development, :test do
