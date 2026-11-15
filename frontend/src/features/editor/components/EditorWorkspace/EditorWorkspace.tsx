@@ -15,6 +15,8 @@ interface Props {
   selectedId: string | null;
   riffs: Riff[];
   setRiffs: React.Dispatch<React.SetStateAction<Riff[]>>;
+  /** Told whether the draft differs from the saved riff. */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 const EDITABLE_FIELDS = ['title', 'text', 'start', 'end'] as const;
@@ -25,6 +27,7 @@ function EditorWorkspace({
   selectedId,
   riffs,
   setRiffs,
+  onDirtyChange,
 }: Props) {
   const [original, setOriginal] = useState<Riff | null>(
     () => riffs.find(r => r.id === selectedId) ?? null,
@@ -62,6 +65,10 @@ function EditorWorkspace({
     draft !== null &&
     original !== null &&
     !isEqual(pick(draft, EDITABLE_FIELDS), pick(original, EDITABLE_FIELDS));
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   return (
     <main className="flex min-w-0 flex-1 flex-col p-6">

@@ -1,4 +1,10 @@
-import { useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useRiffs } from '@/features/riffs/hooks';
 import type { Riff } from '@/features/riffs/types';
@@ -15,7 +21,9 @@ function EditorPage() {
   const project = useProject(projectId);
   const riffs = useRiffs(projectId);
 
-  if (project.isError || riffs.isError) {
+  // Only a failure with nothing loaded replaces the editor: a background
+  // refetch can also fail, and tearing the editor down would lose local edits.
+  if (project.isLoadingError || riffs.isLoadingError) {
     const notFound =
       project.error instanceof ApiError && project.error.status === 404;
     return (
@@ -32,7 +40,7 @@ function EditorPage() {
     );
   }
 
-  if (project.isPending || riffs.isPending) {
+  if (!project.data || !riffs.data) {
     return (
       <EditorMessage>
         <p role="status">Loading project…</p>
@@ -45,22 +53,46 @@ function EditorPage() {
     <LoadedEditor
       key={project.data.id}
       project={project.data}
-      initialRiffs={riffs.data}
+      fetchedRiffs={riffs.data}
     />
   );
 }
 
 interface LoadedEditorProps {
   project: ProjectDTO;
-  initialRiffs: Riff[];
+  fetchedRiffs: Riff[];
 }
 
 /** Edits stay in local state for now; saving to the API comes with the editing tools. */
-function LoadedEditor({ project, initialRiffs }: LoadedEditorProps) {
-  const [riffs, setRiffs] = useState(initialRiffs);
+function LoadedEditor({ project, fetchedRiffs }: LoadedEditorProps) {
+  const [riffs, setRiffs] = useState(fetchedRiffs);
   const [selectedId, setSelectedId] = useState<string | null>(
-    initialRiffs[0]?.id ?? null,
+    fetchedRiffs[0]?.id ?? null,
   );
+  // Local state owns the riffs once the user touches them, so refreshed server
+  // data is adopted only while this visit has changed nothing.
+  const touched = useRef(false);
+
+  useEffect(() => {
+    if (touched.current) return;
+
+    setRiffs(fetchedRiffs);
+    setSelectedId(previous =>
+      previous && fetchedRiffs.some(riff => riff.id === previous)
+        ? previous
+        : (fetchedRiffs[0]?.id ?? null),
+    );
+  }, [fetchedRiffs]);
+
+  const handleRiffsChange: React.Dispatch<React.SetStateAction<Riff[]>> =
+    useCallback(update => {
+      touched.current = true;
+      setRiffs(update);
+    }, []);
+
+  const handleDirtyChange = useCallback((dirty: boolean) => {
+    if (dirty) touched.current = true;
+  }, []);
 
   return (
     <div className="flex h-screen bg-backstage text-white">
@@ -73,8 +105,9 @@ function LoadedEditor({ project, initialRiffs }: LoadedEditorProps) {
         projectTitle={project.title}
         videoId={project.videoId}
         riffs={riffs}
-        setRiffs={setRiffs}
+        setRiffs={handleRiffsChange}
         selectedId={selectedId}
+        onDirtyChange={handleDirtyChange}
       />
     </div>
   );

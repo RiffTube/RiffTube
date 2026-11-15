@@ -10,7 +10,10 @@ interface Options {
   path?: string;
 }
 
-/** Renders inside a fresh QueryClient (no retries, no cache sharing) and a MemoryRouter. */
+/**
+ * Renders inside a fresh QueryClient (no retries, no cache sharing) and a
+ * MemoryRouter. The client is returned so tests can drive refetches.
+ */
 export function renderWithQuery(
   ui: ReactElement,
   { route = '/', path = '*' }: Options = {},
@@ -19,13 +22,16 @@ export function renderWithQuery(
     defaultOptions: { queries: { retry: false } },
   });
 
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[route]}>
-        <Routes>
-          <Route path={path} element={ui} />
-        </Routes>
-      </MemoryRouter>
-    </QueryClientProvider>,
-  );
+  return {
+    queryClient,
+    ...render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[route]}>
+          <Routes>
+            <Route path={path} element={ui} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    ),
+  };
 }

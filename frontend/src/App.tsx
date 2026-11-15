@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './features/auth';
+import AuthScopedCache from './features/auth/components/AuthScopedCache';
 import { createQueryClient } from './queryClient';
 import AppRouter from './router';
 
@@ -11,7 +12,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppRouter />
+        <AuthScopedCache>
+          <AppRouter />
+        </AuthScopedCache>
       </AuthProvider>
     </QueryClientProvider>
   );

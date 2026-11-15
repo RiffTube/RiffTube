@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { vi } from 'vitest';
@@ -26,6 +26,12 @@ const riffs = [
   makeRiff(),
   makeRiff({ id: 'r2', title: 'Classic', start: 18, end: 25, text: 'Ha!' }),
 ];
+
+/** TanStack delivers cache updates on a later tick; let them land. */
+const flushQueryUpdates = () =>
+  act(async () => {
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
 
 const renderEditor = (projectId = project.id) =>
   renderWithQuery(<EditorPage />, {
@@ -91,6 +97,73 @@ describe('<EditorPage />', () => {
 
     expect(await screen.findByText(/has no riffs yet/i)).toBeInTheDocument();
     expect(screen.getByTestId('youtube-player')).toBeInTheDocument();
+  });
+
+  it('keeps the editor and local edits when a background refetch fails', async () => {
+    server.use(...projectHandlers(project, riffs));
+    const { queryClient } = renderEditor();
+    const user = userEvent.setup();
+    await screen.findByRole('heading', { name: 'Movie Night' });
+
+    await user.clear(screen.getByLabelText(/Name/i));
+    await user.type(screen.getByLabelText(/Name/i), 'Edited');
+
+    server.use(
+      http.get('*/api/v1/projects/p1/riffs', () =>
+        HttpResponse.json({ error: 'boom' }, { status: 500 }),
+      ),
+    );
+    await act(() => queryClient.refetchQueries());
+    await flushQueryUpdates();
+
+    expect(
+      screen.getByRole('heading', { name: 'Movie Night' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.getByLabelText(/Name/i)).toHaveValue('Edited');
+  });
+
+  it('adopts refreshed riffs while nothing has been edited', async () => {
+    server.use(...projectHandlers(project, riffs));
+    const { queryClient } = renderEditor();
+    await screen.findByText('wait');
+
+    server.use(
+      http.get('*/api/v1/projects/p1/riffs', () =>
+        HttpResponse.json({
+          riffs: [makeRiff({ id: 'r3', title: 'Fresh from the server' })],
+        }),
+      ),
+    );
+    await act(() => queryClient.refetchQueries());
+
+    expect(
+      await screen.findByText('Fresh from the server'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('wait')).toBeNull();
+  });
+
+  it('leaves local edits alone when a refresh arrives', async () => {
+    server.use(...projectHandlers(project, riffs));
+    const { queryClient } = renderEditor();
+    const user = userEvent.setup();
+    await screen.findByText('wait');
+
+    await user.clear(screen.getByLabelText(/Name/i));
+    await user.type(screen.getByLabelText(/Name/i), 'Edited');
+
+    server.use(
+      http.get('*/api/v1/projects/p1/riffs', () =>
+        HttpResponse.json({
+          riffs: [makeRiff({ id: 'r3', title: 'Fresh from the server' })],
+        }),
+      ),
+    );
+    await act(() => queryClient.refetchQueries());
+    await flushQueryUpdates();
+
+    expect(screen.getByLabelText(/Name/i)).toHaveValue('Edited');
+    expect(screen.queryByText('Fresh from the server')).toBeNull();
   });
 
   it('shows "not found" when the API answers 404', async () => {

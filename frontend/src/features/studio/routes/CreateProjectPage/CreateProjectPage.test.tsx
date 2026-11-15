@@ -1,8 +1,10 @@
 import '@testing-library/jest-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
+import { projectsQueryKey } from '../../hooks';
 import { createProject } from '../../services/projectsApi';
 import CreateProjectPage from './CreateProjectPage';
 
@@ -37,12 +39,22 @@ const project = {
   visibility: 'private',
 };
 
-const renderPage = () =>
+const renderPage = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  queryClient.setQueryData(projectsQueryKey, []);
+
   render(
-    <MemoryRouter>
-      <CreateProjectPage />
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <CreateProjectPage />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
+
+  return { queryClient };
+};
 
 describe('<CreateProjectPage />', () => {
   beforeEach(() => {
@@ -113,6 +125,22 @@ describe('<CreateProjectPage />', () => {
     );
     expect(mockNavigate).toHaveBeenCalledWith(
       '/dashboard/projects/demo-project-id',
+    );
+  });
+
+  it('invalidates the cached project list after creating one', async () => {
+    const user = userEvent.setup();
+    createProjectMock.mockResolvedValue(project);
+    const { queryClient } = renderPage();
+
+    await user.type(screen.getByLabelText(/^title/i), 'My Project');
+    await user.type(screen.getByLabelText(/youtube url or id/i), 'dQw4w9WgXcQ');
+    await user.click(screen.getByRole('button', { name: /start riffing/i }));
+
+    await waitFor(() =>
+      expect(queryClient.getQueryState(projectsQueryKey)?.isInvalidated).toBe(
+        true,
+      ),
     );
   });
 

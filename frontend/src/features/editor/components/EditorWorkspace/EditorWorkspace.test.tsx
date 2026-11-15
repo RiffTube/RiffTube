@@ -134,6 +134,20 @@ describe('<EditorWorkspace />', () => {
     expect(newState[0]).toMatchObject({ start: 5, end: 11 });
   });
 
+  it('reports whether the draft differs from the saved riff', async () => {
+    const onDirtyChange = vi.fn();
+    renderWorkspace({ onDirtyChange });
+    const user = userEvent.setup();
+
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+
+    await user.type(screen.getByLabelText(/Name/i), '!');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+    await user.click(screen.getByRole('button', { name: /undo changes/i }));
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+  });
+
   it('says so when the project has no riffs', () => {
     renderWorkspace({ riffs: [], selectedId: null });
 
