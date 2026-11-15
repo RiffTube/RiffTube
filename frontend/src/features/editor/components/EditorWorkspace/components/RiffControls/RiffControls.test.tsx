@@ -1,16 +1,17 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
-import type { DummyRiff } from '../../../../data/dummyRiffs';
+import type { Riff } from '@/features/riffs/types';
 import RiffControls from './RiffControls';
 
-const dummyRiff: DummyRiff = {
+const riff: Riff = {
   id: 'r1',
   title: 'Original title',
-  thumbnail: 'https://picsum.photos/200',
   start: 10,
-  duration: 5,
+  end: 15,
   text: 'Some text',
+  styling: {},
+  version: 1,
 };
 
 describe('<RiffControls />', () => {
@@ -31,7 +32,7 @@ describe('<RiffControls />', () => {
     render(
       <RiffControls
         canSave={true}
-        riff={dummyRiff}
+        riff={riff}
         onChange={vi.fn()}
         onUndo={vi.fn()}
         onSave={vi.fn()}
@@ -40,8 +41,8 @@ describe('<RiffControls />', () => {
     const nameInput = screen.getByLabelText(/name/i);
     const durInput = screen.getByLabelText(/duration/i);
 
-    expect(nameInput).toHaveValue(dummyRiff.title);
-    expect(durInput).toHaveValue(String(dummyRiff.duration));
+    expect(nameInput).toHaveValue(riff.title);
+    expect(durInput).toHaveValue('5');
   });
 
   it('calls onChange once per keystroke as the user types', async () => {
@@ -49,7 +50,7 @@ describe('<RiffControls />', () => {
     render(
       <RiffControls
         canSave={false}
-        riff={dummyRiff}
+        riff={riff}
         onChange={onChange}
         onUndo={vi.fn()}
       />,
@@ -64,12 +65,12 @@ describe('<RiffControls />', () => {
     expect(onChange).toHaveBeenCalledTimes(3);
   });
 
-  it('fires onSave with only id, title & duration when Save is clicked', async () => {
+  it('fires onSave with only id & title when Save is clicked', async () => {
     const onSave = vi.fn();
     render(
       <RiffControls
         canSave={true}
-        riff={{ ...dummyRiff, title: 'Saved!' }}
+        riff={{ ...riff, title: 'Saved!' }}
         onChange={vi.fn()}
         onUndo={vi.fn()}
         onSave={onSave}
@@ -80,9 +81,8 @@ describe('<RiffControls />', () => {
 
     expect(onSave).toHaveBeenCalledTimes(1);
     expect(onSave).toHaveBeenCalledWith({
-      id: dummyRiff.id,
+      id: riff.id,
       title: 'Saved!',
-      duration: dummyRiff.duration,
     });
   });
 
@@ -91,7 +91,7 @@ describe('<RiffControls />', () => {
     render(
       <RiffControls
         canSave={true}
-        riff={dummyRiff}
+        riff={riff}
         onChange={vi.fn()}
         onUndo={onUndo}
       />,
@@ -106,7 +106,7 @@ describe('<RiffControls />', () => {
     render(
       <RiffControls
         canSave={false}
-        riff={dummyRiff}
+        riff={riff}
         onChange={onChange}
         onUndo={vi.fn()}
       />,
@@ -117,6 +117,6 @@ describe('<RiffControls />', () => {
     expect(durInput).toHaveAttribute('readOnly');
     await user.type(durInput, '123'); // Should do nothing
     expect(onChange).not.toHaveBeenCalled();
-    expect(durInput).toHaveValue(String(dummyRiff.duration));
+    expect(durInput).toHaveValue('5');
   });
 });

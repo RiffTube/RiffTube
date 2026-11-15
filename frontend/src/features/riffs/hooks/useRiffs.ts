@@ -1,18 +1,15 @@
-import { useEffect, useState } from 'react';
-import { Riff } from '../components/RiffOverlay';
+import { useQuery } from '@tanstack/react-query';
 import { fetchRiffsForProject } from '../services/riffsApi';
 
-function useRiffs(projectId: string): Riff[] {
-  const [riffs, setRiffs] = useState<Riff[]>([]);
+export const riffsQueryKey = (projectId: string) =>
+  ['projects', projectId, 'riffs'] as const;
 
-  useEffect(() => {
-    if (!projectId) return;
-    fetchRiffsForProject(projectId)
-      .then(data => setRiffs(data.riffs))
-      .catch(error => console.error(error));
-  }, [projectId]);
-
-  return riffs;
+function useRiffs(projectId: string | undefined) {
+  return useQuery({
+    queryKey: riffsQueryKey(projectId ?? ''),
+    queryFn: () => fetchRiffsForProject(projectId!),
+    enabled: Boolean(projectId),
+  });
 }
 
 export default useRiffs;

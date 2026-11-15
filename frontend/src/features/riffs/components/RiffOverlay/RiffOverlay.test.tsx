@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import RiffOverlay, { Riff } from './RiffOverlay';
+import RiffOverlay from './RiffOverlay';
 
-const baseRiffs: Riff[] = [
+const baseRiffs = [
   { id: 'r1', start: 0, end: 5, text: 'First riff' },
   { id: 'r2', start: 3, end: 8, text: 'Second riff' },
   { id: 'r3', start: 10, end: 12, text: 'Third riff' },

@@ -1,1 +1,1 @@
-export { default as useRiffs } from './useRiffs';
+export { default as useRiffs, riffsQueryKey } from './useRiffs';

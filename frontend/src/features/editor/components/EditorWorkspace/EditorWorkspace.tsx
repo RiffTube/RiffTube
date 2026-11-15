@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { isEqual } from 'lodash';
-import type { DummyRiff } from '../../data/dummyRiffs';
+import { isEqual, pick } from 'lodash';
+import { Link } from 'react-router-dom';
+import type { Riff } from '@/features/riffs/types';
 import AnnotationForm from './components/AnnotationForm';
 import AudioPanel from './components/AudioPanel';
 import RevisionPanel from './components/RevisionPanel';
@@ -8,17 +9,28 @@ import RiffControls from './components/RiffControls';
 import VideoCard from './components/VideoCard';
 
 interface Props {
+  projectTitle: string;
+  /** YouTube id of the project's video */
+  videoId: string | null;
   selectedId: string | null;
-  riffs: DummyRiff[];
-  setRiffs: React.Dispatch<React.SetStateAction<DummyRiff[]>>;
+  riffs: Riff[];
+  setRiffs: React.Dispatch<React.SetStateAction<Riff[]>>;
 }
 
-function EditorWorkspace({ selectedId, riffs, setRiffs }: Props) {
-  const [original, setOriginal] = useState<DummyRiff | null>(
+const EDITABLE_FIELDS = ['title', 'text', 'start', 'end'] as const;
+
+function EditorWorkspace({
+  projectTitle,
+  videoId,
+  selectedId,
+  riffs,
+  setRiffs,
+}: Props) {
+  const [original, setOriginal] = useState<Riff | null>(
     () => riffs.find(r => r.id === selectedId) ?? null,
   );
 
-  const [draft, setDraft] = useState<DummyRiff | null>(original);
+  const [draft, setDraft] = useState<Riff | null>(original);
 
   useEffect(() => {
     const next = riffs.find(r => r.id === selectedId) ?? null;
@@ -26,7 +38,7 @@ function EditorWorkspace({ selectedId, riffs, setRiffs }: Props) {
     setDraft(next);
   }, [selectedId, riffs]);
 
-  const handleSave = (changes: Partial<DummyRiff>) => {
+  const handleSave = (changes: Partial<Riff>) => {
     if (!draft) return;
     const updated = { ...draft, ...changes };
 
@@ -36,9 +48,9 @@ function EditorWorkspace({ selectedId, riffs, setRiffs }: Props) {
     const newRiffs = riffs.map(r => (r.id === updated.id ? updated : r));
     setRiffs(newRiffs);
 
-    // TODO: hook this up to our PATCH /api/riffs/:id endpoint
+    // TODO: persist with PATCH /api/v1/projects/:projectId/riffs/:id
     if (process.env.NODE_ENV === 'development') {
-      console.debug('[DEV] riff saved:', updated);
+      console.debug('[DEV] riff saved locally:', updated);
     }
   };
 
@@ -46,51 +58,35 @@ function EditorWorkspace({ selectedId, riffs, setRiffs }: Props) {
     setDraft(original);
   };
 
-  const handleRevisionSelect = async (revisionId: string) => {
-    if (!original) return;
-
-    if (revisionId === 'current') {
-      setDraft(original);
-      return;
-    }
-
-    // TODO: actually fetch this from /api…
-    if (process.env.NODE_ENV === 'development') {
-      console.debug(
-        `[DEV] would load revision ${revisionId} for riff ${original.id}`,
-      );
-    }
-
-    const simulatedRevision: DummyRiff = {
-      ...original,
-      title: `${original.title} (rev ${revisionId})`,
-      text: original.text
-        ? `${original.text} [loaded ${revisionId}]`
-        : undefined,
-    };
-
-    setDraft(simulatedRevision);
-  };
-
   const isDirty: boolean =
     draft !== null &&
     original !== null &&
-    !isEqual(
-      { title: draft.title, duration: draft.duration, text: draft.text },
-      {
-        title: original.title,
-        duration: original.duration,
-        text: original.text,
-      },
-    );
+    !isEqual(pick(draft, EDITABLE_FIELDS), pick(original, EDITABLE_FIELDS));
+
   return (
     <main className="flex min-w-0 flex-1 flex-col p-6">
+      <header className="mb-4 flex min-w-0 items-center gap-3">
+        <Link
+          to="/dashboard"
+          className="shrink-0 text-sm text-white/60 hover:text-white"
+        >
+          ← Dashboard
+        </Link>
+        <h1 className="truncate text-lg font-semibold">{projectTitle}</h1>
+      </header>
+
       <div className="mb-6">
-        <VideoCard riffs={riffs} selectedId={selectedId} />
+        <VideoCard riffs={riffs} selectedId={selectedId} videoId={videoId} />
       </div>
 
       {/* Editor panels (scrollable) */}
       <div className="min-w-0 flex-1 space-y-8 overflow-x-hidden overflow-y-auto pr-2 md:pr-4">
+        {riffs.length === 0 && (
+          <p className="text-sm text-white/60">
+            This project has no riffs yet.
+          </p>
+        )}
+
         {draft && (
           <>
             <RiffControls
@@ -110,7 +106,7 @@ function EditorWorkspace({ selectedId, riffs, setRiffs }: Props) {
               }
             />
 
-            <RevisionPanel riff={draft} onSelect={handleRevisionSelect} />
+            <RevisionPanel riff={draft} />
           </>
         )}
       </div>

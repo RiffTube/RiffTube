@@ -1,35 +1,38 @@
 import { useEffect, useState } from 'react';
-import type { DummyRiff } from '../../../../data/dummyRiffs';
+import { riffDuration, type Riff } from '@/features/riffs/types';
 
 interface Props {
-  riff: DummyRiff;
-  onChange: (changes: Partial<DummyRiff>) => void;
+  riff: Riff;
+  onChange: (changes: Partial<Riff>) => void;
 }
 function AnnotationForm({ riff, onChange }: Props) {
-  const [text, setText] = useState(riff.text ?? '');
+  const [text, setText] = useState(riff.text);
   const [bgColor, setBgColor] = useState('#000000');
   const [textColor, setTextColor] = useState('#ffffff');
   const [fontSize, setFontSize] = useState('16');
-  const [duration, setDuration] = useState(String(riff.duration));
+  const [duration, setDuration] = useState(String(riffDuration(riff)));
 
   /* Synchronise when the parent selects a different riff */
   useEffect(() => {
-    setText(riff.text ?? '');
-    setDuration(String(riff.duration));
+    setText(riff.text);
+    setDuration(String(riffDuration(riff)));
     // bgColor / textColor / fontSize would come from riff.styling later
   }, [riff]);
 
   useEffect(() => {
     const id = setTimeout(() => {
-      onChange({
-        text,
-        duration: Number(duration),
-        // later: styling: { bgColor, textColor, fontSize: Number(fontSize) }
-      });
+      // Report only what actually differs, so an untouched form stays quiet.
+      // The riff stores start/end, so a duration edit moves `end`.
+      const changes: Partial<Riff> = {};
+      const seconds = Number(duration);
+      if (text !== riff.text) changes.text = text;
+      if (seconds !== riffDuration(riff)) changes.end = riff.start + seconds;
+      // later: styling: { bgColor, textColor, fontSize: Number(fontSize) }
+      if (Object.keys(changes).length > 0) onChange(changes);
     }, 300);
 
     return () => clearTimeout(id);
-  }, [text, duration, onChange]);
+  }, [text, duration, riff, onChange]);
 
   return (
     <section className="space-y-4 rounded-lg bg-transparent p-4">

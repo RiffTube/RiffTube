@@ -1,12 +1,19 @@
-import type { Riff } from '../components/RiffOverlay';
+import type { Riff } from '../types';
 
-export interface FetchRiffsResponse {
-  riffs: Riff[];
+interface RiffDTO extends Omit<Riff, 'title' | 'styling'> {
+  title: string | null;
+  styling: Riff['styling'] | null;
 }
 
-export async function fetchRiffsForProject(
-  projectId: string,
-): Promise<FetchRiffsResponse> {
+interface FetchRiffsResponse {
+  riffs: RiffDTO[];
+}
+
+function toRiff(dto: RiffDTO): Riff {
+  return { ...dto, title: dto.title ?? '', styling: dto.styling ?? {} };
+}
+
+export async function fetchRiffsForProject(projectId: string): Promise<Riff[]> {
   const res = await fetch(`/api/v1/projects/${projectId}/riffs`, {
     credentials: 'include',
   });
@@ -15,5 +22,5 @@ export async function fetchRiffsForProject(
       `Failed to load riffs for project ${projectId}: ${res.status}`,
     );
   const data = (await res.json()) as FetchRiffsResponse;
-  return data;
+  return data.riffs.map(toRiff);
 }
