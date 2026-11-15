@@ -23,6 +23,11 @@ module ResponseRenderable
            status: :unprocessable_entity
   end
 
+  # 404 Not Found
+  def render_not_found
+    render json: { error: 'Not found' }, status: :not_found
+  end
+
   private
 
   # Derive a JSON root key from the record’s model name,

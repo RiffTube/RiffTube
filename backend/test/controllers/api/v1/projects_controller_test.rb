@@ -45,6 +45,50 @@ module Api
         assert_includes json['errors']['title'], "can't be blank"
       end
 
+      test "index lists only the current user's active projects, newest first" do
+        user = log_in_new_user
+        older = create(:project, owner: user, title: 'Older', updated_at: 2.days.ago)
+        newer = create(:project, owner: user, title: 'Newer', video_id: 'abc123')
+        create(:project, owner: user, deleted_at: Time.current)
+        create(:project)
+
+        get '/api/v1/projects'
+
+        assert_response :ok
+        projects = json_body['projects']
+        assert_equal [newer.id, older.id], projects.pluck('id')
+        assert_equal 'abc123', projects.first['videoId']
+        assert projects.first['updatedAt'].present?
+      end
+
+      test 'index requires authentication' do
+        get '/api/v1/projects'
+
+        assert_response :unauthorized
+      end
+
+      test 'show returns the project to its owner' do
+        user = log_in_new_user
+        project = create(:project, owner: user, video_id: 'abc123')
+
+        get "/api/v1/projects/#{project.id}"
+
+        assert_response :ok
+        assert_equal project.id, json_body['project']['id']
+        assert_equal 'abc123', json_body['project']['videoId']
+      end
+
+      test 'show is a 404 for other users, deleted and unknown projects' do
+        user = log_in_new_user
+        deleted = create(:project, owner: user, deleted_at: Time.current)
+
+        [create(:project).id, deleted.id, SecureRandom.uuid, 'nope'].each do |id|
+          get "/api/v1/projects/#{id}"
+
+          assert_response :not_found
+        end
+      end
+
       test 'create requires authentication' do
         post '/api/v1/projects', params: {
           project: { title: 'My first project', video_host: 'youtube', video_id: 'dQw4w9WgXcQ' }

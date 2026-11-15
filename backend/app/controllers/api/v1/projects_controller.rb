@@ -2,12 +2,24 @@
 
 module Api
   module V1
-    # Handles creation of projects owned by the current user.
+    # Lists, shows and creates projects owned by the current user.
     class ProjectsController < ApplicationController
       include Authenticatable
       include ResponseRenderable
 
       before_action :authenticate_user!
+
+      def index
+        projects = current_user.projects.active.order(updated_at: :desc)
+        render json: { projects: projects.map { |project| project_json(project) } }
+      end
+
+      def show
+        project = current_user.projects.active.find_by(id: params[:id])
+        return render_not_found unless project
+
+        render json: { project: project_json(project) }
+      end
 
       def create
         project = current_user.projects.new(project_params)
@@ -33,7 +45,8 @@ module Api
           videoHost: project.video_host,
           videoId: project.video_id,
           videoUrl: project.video_url,
-          visibility: project.visibility
+          visibility: project.visibility,
+          updatedAt: project.updated_at
         }
       end
     end

@@ -12,7 +12,17 @@ Rails.application.routes.draw do
       delete 'logout', to: 'sessions#destroy'    # DELETE /api/v1/logout
 
       # ─── PROJECTS ─────────────────────────────────────────
-      resources :projects, only: [:create] # POST /api/v1/projects
+      # GET/POST /api/v1/projects, GET /api/v1/projects/:id
+      resources :projects, only: %i[index show create] do
+        # GET/POST /api/v1/projects/:project_id/riffs
+        # PATCH/DELETE /api/v1/projects/:project_id/riffs/:id
+        resources :riffs, only: %i[index create update destroy]
+      end
+      # ─── RIFF VERSIONS ────────────────────────────────────
+      # GET  /api/v1/riffs/:riff_id/versions
+      get 'riffs/:riff_id/versions', to: 'riff_versions#index', as: :riff_versions
+      # POST /api/v1/riffs/:riff_id/versions/:id/restore
+      post 'riffs/:riff_id/versions/:id/restore', to: 'riff_versions#restore', as: :restore_riff_version
 
       # ─── OAUTH ───────────────────────────────────────────
       get 'auth/google_oauth2',          to: 'sessions#google_oauth2_redirect'
