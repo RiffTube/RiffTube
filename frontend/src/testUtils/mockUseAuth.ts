@@ -42,12 +42,10 @@ function resolveState(overrides: MockAuthOverrides): AuthState {
 }
 
 export function mockAuthState(overrides: MockAuthOverrides = {}): UseAuthShape {
-  const {
-    isAuthenticated: _isAuthenticated,
-    loading: _loading,
-    isInitialized: _isInitialized,
-    ...rest
-  } = overrides;
+  const rest: Partial<UseAuthShape> = { ...overrides };
+  for (const key of ['isAuthenticated', 'loading', 'isInitialized']) {
+    delete (rest as Record<string, unknown>)[key];
+  }
 
   const defaultState: UseAuthShape = {
     user: null,
