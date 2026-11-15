@@ -38,6 +38,9 @@ class Project < ApplicationRecord
            as: :commentable,
            dependent: :destroy
 
+  ## Scopes
+  scope :active, -> { where(deleted_at: nil) }
+
   ## Validations
   before_validation { title&.strip! }
   validates :title, presence: true, length: { maximum: 255 }

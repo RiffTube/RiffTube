@@ -19,5 +19,6 @@ end
 module ActionDispatch
   class IntegrationTest
     include IntegrationHelpers
+    include RiffTestHelpers
   end
 end
