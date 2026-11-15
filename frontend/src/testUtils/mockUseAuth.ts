@@ -1,12 +1,13 @@
 import { vi } from 'vitest';
 import type { UserDTO } from '@/features/auth/services/authApi';
 
+export type AuthState = 'loading' | 'authorized' | 'unauthorized' | 'error';
+
+/** Mirrors AuthContextShape in features/auth/hooks/useAuth.tsx */
 export type UseAuthShape = {
   user: UserDTO | null;
-  isAuthenticated: boolean;
-  isInitialized: boolean;
-  loading: boolean;
   error: string | null;
+  state: AuthState;
 
   clearError: () => void;
   signIn: (login: string, password: string) => Promise<void>;
@@ -15,21 +16,43 @@ export type UseAuthShape = {
   refreshMe: () => Promise<void>;
 };
 
+/**
+ * Overrides accepted by the helpers below. Besides the real fields, tests can
+ * pass the older convenience flags (`isAuthenticated`, `loading`,
+ * `isInitialized`); they are translated into `state` so existing tests keep
+ * working. Prefer passing `state` directly in new tests.
+ */
+export type MockAuthOverrides = Partial<UseAuthShape> & {
+  isAuthenticated?: boolean;
+  loading?: boolean;
+  isInitialized?: boolean;
+};
+
 export const useAuthMock = vi.fn<() => UseAuthShape>();
 
 vi.mock('@/features/auth/hooks/useAuth', () => ({
   useAuth: useAuthMock,
 }));
 
-export function mockAuthState(
-  overrides: Partial<UseAuthShape> = {},
-): UseAuthShape {
+function resolveState(overrides: MockAuthOverrides): AuthState {
+  if (overrides.state) return overrides.state;
+  if (overrides.loading || overrides.isInitialized === false) return 'loading';
+  if (overrides.isAuthenticated) return 'authorized';
+  return 'unauthorized';
+}
+
+export function mockAuthState(overrides: MockAuthOverrides = {}): UseAuthShape {
+  const {
+    isAuthenticated: _isAuthenticated,
+    loading: _loading,
+    isInitialized: _isInitialized,
+    ...rest
+  } = overrides;
+
   const defaultState: UseAuthShape = {
     user: null,
-    isAuthenticated: false,
-    isInitialized: true,
-    loading: false,
     error: null,
+    state: 'unauthorized',
     clearError: vi.fn(),
     signIn: vi.fn(),
     signUp: vi.fn(),
@@ -37,16 +60,21 @@ export function mockAuthState(
     refreshMe: vi.fn(),
   };
 
-  const value: UseAuthShape = { ...defaultState, ...overrides };
+  const value: UseAuthShape = {
+    ...defaultState,
+    ...rest,
+    state: resolveState(overrides),
+  };
   useAuthMock.mockReturnValue(value);
   return value;
 }
 
-export function mockAuthSignIn(
-  overrides: Partial<
-    Pick<UseAuthShape, 'signIn' | 'loading' | 'error' | 'clearError'>
-  > = {},
-): UseAuthShape {
+type SignInOverrides = Pick<
+  MockAuthOverrides,
+  'signIn' | 'loading' | 'state' | 'error' | 'clearError'
+>;
+
+export function mockAuthSignIn(overrides: SignInOverrides = {}): UseAuthShape {
   return mockAuthState({
     signIn:
       overrides.signIn ??
@@ -54,16 +82,18 @@ export function mockAuthSignIn(
         .fn<(login: string, password: string) => Promise<void>>()
         .mockResolvedValue(undefined),
     loading: overrides.loading ?? false,
+    state: overrides.state,
     error: overrides.error ?? null,
     clearError: overrides.clearError ?? vi.fn(),
   });
 }
 
-export function mockAuthSignUp(
-  overrides: Partial<
-    Pick<UseAuthShape, 'signUp' | 'loading' | 'error' | 'clearError'>
-  > = {},
-): UseAuthShape {
+type SignUpOverrides = Pick<
+  MockAuthOverrides,
+  'signUp' | 'loading' | 'state' | 'error' | 'clearError'
+>;
+
+export function mockAuthSignUp(overrides: SignUpOverrides = {}): UseAuthShape {
   return mockAuthState({
     signUp:
       overrides.signUp ??
@@ -71,6 +101,7 @@ export function mockAuthSignUp(
         .fn<(u: string, e: string, p: string) => Promise<void>>()
         .mockResolvedValue(undefined),
     loading: overrides.loading ?? false,
+    state: overrides.state,
     error: overrides.error ?? null,
     clearError: overrides.clearError ?? vi.fn(),
   });
