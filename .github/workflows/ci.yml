@@ -15,7 +15,7 @@ jobs:
   # ---------------- 1) Back-end: Rails + RuboCop + Tests ----------------
   backend:
     name: Rails API & RuboCop
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     env:
       DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/rifftube_test
@@ -71,7 +71,7 @@ jobs:
   # ---------------- 2) Front-end: ESLint + Prettier + Tests -------------
   frontend:
     name: Front-end (ESLint + Prettier + Tests)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: backend
 
     steps:
@@ -104,7 +104,7 @@ jobs:
   # ---------------- 3) Release: semantic-release -----------------------
   release:
     name: Release 🎉
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: frontend
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 

@@ -11,6 +11,9 @@ Rails.application.routes.draw do
       post   'login',  to: 'sessions#create'     # POST   /api/v1/login
       delete 'logout', to: 'sessions#destroy'    # DELETE /api/v1/logout
 
+      # ─── PROJECTS ─────────────────────────────────────────
+      resources :projects, only: [:create] # POST /api/v1/projects
+
       # ─── OAUTH ───────────────────────────────────────────
       get 'auth/google_oauth2',          to: 'sessions#google_oauth2_redirect'
       get 'auth/google_oauth2/callback', to: 'sessions#google_oauth2_callback'
