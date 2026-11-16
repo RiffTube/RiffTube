@@ -166,6 +166,30 @@ describe('<EditorPage />', () => {
     expect(screen.queryByText('Fresh from the server')).toBeNull();
   });
 
+  it('keeps an annotation edit that a refresh interrupts before the debounce', async () => {
+    server.use(...projectHandlers(project, riffs));
+    const { queryClient } = renderEditor();
+    const user = userEvent.setup({ delay: null });
+    await screen.findByText('wait');
+
+    const annotation = screen.getByPlaceholderText(/type riff text/i);
+    await user.type(annotation, '!');
+
+    // The refresh lands while the form's 300ms debounce is still pending.
+    server.use(
+      http.get('*/api/v1/projects/p1/riffs', () =>
+        HttpResponse.json({
+          riffs: [makeRiff({ id: 'r3', title: 'Fresh from the server' })],
+        }),
+      ),
+    );
+    await act(() => queryClient.refetchQueries());
+    await flushQueryUpdates();
+
+    expect(annotation).toHaveValue('Wait for it...!');
+    expect(screen.queryByText('Fresh from the server')).toBeNull();
+  });
+
   it('shows "not found" when the API answers 404', async () => {
     server.use(
       http.get('*/api/v1/projects/nope', () =>

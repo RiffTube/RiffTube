@@ -4,8 +4,14 @@ import { riffDuration, type Riff } from '@/features/riffs/types';
 interface Props {
   riff: Riff;
   onChange: (changes: Partial<Riff>) => void;
+  /**
+   * Called on the first keystroke, before the debounce below reports the edit.
+   * Without it a refresh landing inside those 300ms would reset these inputs
+   * and take the pending edit with it.
+   */
+  onTouched?: () => void;
 }
-function AnnotationForm({ riff, onChange }: Props) {
+function AnnotationForm({ riff, onChange, onTouched }: Props) {
   const [text, setText] = useState(riff.text);
   const [bgColor, setBgColor] = useState('#000000');
   const [textColor, setTextColor] = useState('#ffffff');
@@ -40,7 +46,10 @@ function AnnotationForm({ riff, onChange }: Props) {
       <textarea
         rows={4}
         value={text}
-        onChange={e => setText(e.target.value)}
+        onChange={e => {
+          onTouched?.();
+          setText(e.target.value);
+        }}
         placeholder="Type riff text that will appear over the video…"
         className="w-full max-w-full resize-none rounded-lg border-2 border-smoke bg-transparent p-2 text-sm xl:text-base"
       />
@@ -82,6 +91,7 @@ function AnnotationForm({ riff, onChange }: Props) {
             min={1}
             value={duration}
             onChange={e => {
+              onTouched?.();
               const value = parseInt(e.target.value, 10);
               if (!isNaN(value) && value >= 1 && value <= 3600) {
                 setDuration(String(value));

@@ -94,6 +94,10 @@ function LoadedEditor({ project, fetchedRiffs }: LoadedEditorProps) {
     if (dirty) touched.current = true;
   }, []);
 
+  const handleTouched = useCallback(() => {
+    touched.current = true;
+  }, []);
+
   return (
     <div className="flex h-screen bg-backstage text-white">
       <RiffSidebar
@@ -108,6 +112,7 @@ function LoadedEditor({ project, fetchedRiffs }: LoadedEditorProps) {
         setRiffs={handleRiffsChange}
         selectedId={selectedId}
         onDirtyChange={handleDirtyChange}
+        onTouched={handleTouched}
       />
     </div>
   );

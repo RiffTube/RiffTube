@@ -17,6 +17,8 @@ interface Props {
   setRiffs: React.Dispatch<React.SetStateAction<Riff[]>>;
   /** Told whether the draft differs from the saved riff. */
   onDirtyChange?: (dirty: boolean) => void;
+  /** Called as soon as the user types, ahead of any debounced draft update. */
+  onTouched?: () => void;
 }
 
 const EDITABLE_FIELDS = ['title', 'text', 'start', 'end'] as const;
@@ -28,6 +30,7 @@ function EditorWorkspace({
   riffs,
   setRiffs,
   onDirtyChange,
+  onTouched,
 }: Props) {
   const [original, setOriginal] = useState<Riff | null>(
     () => riffs.find(r => r.id === selectedId) ?? null,
@@ -108,6 +111,7 @@ function EditorWorkspace({
 
             <AnnotationForm
               riff={draft}
+              onTouched={onTouched}
               onChange={updated =>
                 setDraft(prev => (prev ? { ...prev, ...updated } : prev))
               }
