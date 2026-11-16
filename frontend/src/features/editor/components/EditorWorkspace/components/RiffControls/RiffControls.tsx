@@ -1,64 +1,56 @@
-import Button from '@/components/Button'; // if you have a shared Button; else keep <button>
+import Button from '@/components/Button';
 import TextInput from '@/components/TextInput';
-import { riffDuration, type Riff } from '@/features/riffs/types';
+import type { Riff } from '@/features/riffs/types';
 
 interface Props {
-  riff: Riff | null;
-  onChange: (updated: Riff) => void;
-  onSave?: (changes: Partial<Riff>) => void;
-  onUndo: () => void;
-  canSave: boolean;
+  riff: Riff;
+  onChange: (changes: Pick<Riff, 'title'>) => void;
+  onSave: () => void;
+  onRevert: () => void;
+  onDelete: () => void;
+  /** Whether there are unsaved changes to the title, text or styling */
+  isDirty: boolean;
+  isSaving: boolean;
 }
 
-function RiffControls({ riff, onChange, onSave, onUndo, canSave }: Props) {
-  // If no riff is selected yet, just return null / skeleton
-  if (!riff) return null;
-
-  /** handlers write directly to parent draft */
-  const handleTitle = (e: React.ChangeEvent<HTMLInputElement>) =>
-    onChange({ ...riff, title: e.target.value });
-
-  const handleSaveClick = () =>
-    onSave?.({
-      id: riff.id,
-      title: riff.title,
-    });
-
+function RiffControls({
+  riff,
+  onChange,
+  onSave,
+  onRevert,
+  onDelete,
+  isDirty,
+  isSaving,
+}: Props) {
   return (
-    <div className="flex flex-wrap items-end gap-6">
+    <div className="flex flex-wrap items-end gap-4">
       {/* Name field */}
       <TextInput
         id="riff-name"
         label="Name"
         value={riff.title}
-        onChange={handleTitle}
+        onChange={event => onChange({ title: event.target.value })}
         placeholder="Riff title"
-        required
         className="w-56"
-      />
-
-      {/* Duration field (read‑only, derived from start/end) */}
-      <TextInput
-        id="riff-duration"
-        label="Duration (s)"
-        value={String(riffDuration(riff))}
-        readOnly
       />
 
       {/* push buttons to the right */}
       <div className="flex-1" />
 
-      {/* Undo */}
-      <Button variant="secondary" onClick={onUndo}>
+      <Button variant="secondary" onClick={onDelete}>
+        Delete
+      </Button>
+
+      <Button variant="secondary" disabled={!isDirty} onClick={onRevert}>
         Undo changes
       </Button>
 
-      {/* Save */}
       <Button
-        aria-label={canSave ? 'Save riff' : 'No changes to save'}
-        disabled={!canSave}
+        aria-label={isDirty ? 'Save riff' : 'No changes to save'}
+        disabled={!isDirty}
+        isLoading={isSaving}
         variant="lightMode"
-        onClick={handleSaveClick}
+        onClick={onSave}
       >
         Save
       </Button>

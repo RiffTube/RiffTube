@@ -1,11 +1,6 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { PlayerProvider } from '@/features/player/context';
 import { useRiffs } from '@/features/riffs/hooks';
 import type { Riff } from '@/features/riffs/types';
 import { useProject } from '@/features/studio/hooks';
@@ -15,6 +10,9 @@ import {
 } from '@/features/studio/services/projectsApi';
 import EditorWorkspace from '../../components/EditorWorkspace';
 import RiffSidebar from '../../components/RiffSidebar';
+import UndoToast from '../../components/UndoToast';
+import { useEditorShortcuts } from '../../hooks/useEditorShortcuts';
+import { useRiffEditor } from '../../hooks/useRiffEditor';
 
 function EditorPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -48,13 +46,11 @@ function EditorPage() {
     );
   }
 
-  // Keyed so switching projects starts from that project's riffs.
+  // Keyed so switching projects starts a fresh editor and player.
   return (
-    <LoadedEditor
-      key={project.data.id}
-      project={project.data}
-      fetchedRiffs={riffs.data}
-    />
+    <PlayerProvider key={project.data.id}>
+      <LoadedEditor project={project.data} fetchedRiffs={riffs.data} />
+    </PlayerProvider>
   );
 }
 
@@ -63,57 +59,45 @@ interface LoadedEditorProps {
   fetchedRiffs: Riff[];
 }
 
-/** Edits stay in local state for now; saving to the API comes with the editing tools. */
 function LoadedEditor({ project, fetchedRiffs }: LoadedEditorProps) {
-  const [riffs, setRiffs] = useState(fetchedRiffs);
-  const [selectedId, setSelectedId] = useState<string | null>(
-    fetchedRiffs[0]?.id ?? null,
-  );
-  // Local state owns the riffs once the user touches them, so refreshed server
-  // data is adopted only while this visit has changed nothing.
-  const touched = useRef(false);
+  const editor = useRiffEditor(project.id, fetchedRiffs);
+  const handleKeyDown = useEditorShortcuts(editor);
+  const container = useRef<HTMLDivElement>(null);
 
+  // Shortcuts are handled here, so start with focus inside the editor.
   useEffect(() => {
-    if (touched.current) return;
-
-    setRiffs(fetchedRiffs);
-    setSelectedId(previous =>
-      previous && fetchedRiffs.some(riff => riff.id === previous)
-        ? previous
-        : (fetchedRiffs[0]?.id ?? null),
-    );
-  }, [fetchedRiffs]);
-
-  const handleRiffsChange: React.Dispatch<React.SetStateAction<Riff[]>> =
-    useCallback(update => {
-      touched.current = true;
-      setRiffs(update);
-    }, []);
-
-  const handleDirtyChange = useCallback((dirty: boolean) => {
-    if (dirty) touched.current = true;
+    container.current?.focus();
   }, []);
 
-  const handleTouched = useCallback(() => {
-    touched.current = true;
-  }, []);
+  // Show unsaved edits everywhere the selected riff appears.
+  const { riffs, draft } = editor;
+  const shownRiffs = useMemo(
+    () => riffs.map(riff => (draft && riff.id === draft.id ? draft : riff)),
+    [riffs, draft],
+  );
 
   return (
-    <div className="flex h-screen bg-backstage text-white">
+    <div
+      ref={container}
+      tabIndex={-1}
+      onKeyDown={handleKeyDown}
+      className="flex h-screen bg-backstage text-white outline-none"
+    >
       <RiffSidebar
-        riffs={riffs}
-        selectedId={selectedId}
-        onSelect={setSelectedId}
+        riffs={shownRiffs}
+        selectedId={editor.selectedId}
+        overlappingIds={editor.overlappingIds}
+        onSelect={editor.select}
       />
       <EditorWorkspace
         projectTitle={project.title}
         videoId={project.videoId}
-        riffs={riffs}
-        setRiffs={handleRiffsChange}
-        selectedId={selectedId}
-        onDirtyChange={handleDirtyChange}
-        onTouched={handleTouched}
+        riffs={shownRiffs}
+        editor={editor}
       />
+      {editor.pendingDelete && (
+        <UndoToast message="Riff deleted." onUndo={editor.undoDelete} />
+      )}
     </div>
   );
 }

@@ -1,76 +1,83 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
 import { makeRiff } from '@/testUtils/server';
 import RiffSidebar from './RiffSidebar';
 
-// 1) Mock Logo so we don’t need its implementation
 vi.mock('@/components/Logo', () => ({
   default: () => <div data-testid="logo" />,
 }));
 
+const riffs = [
+  makeRiff({ id: 'r1', title: 'First Riff', start: 23.34, end: 35.3 }),
+  makeRiff({ id: 'r2', title: 'Second Riff', start: 61, end: 64.5 }),
+];
+
+function renderSidebar(props: Partial<Parameters<typeof RiffSidebar>[0]> = {}) {
+  const onSelect = vi.fn();
+  render(
+    <RiffSidebar
+      riffs={riffs}
+      selectedId={null}
+      overlappingIds={new Set()}
+      onSelect={onSelect}
+      {...props}
+    />,
+  );
+  return { onSelect, user: userEvent.setup() };
+}
+
 describe('<RiffSidebar />', () => {
-  const riffs = [
-    makeRiff({ id: 'r1', title: 'First Riff', start: 23.34, end: 35.34 }),
-    makeRiff({ id: 'r2', title: 'Second Riff', start: 61, end: 64.5 }),
-  ];
+  it('lists each riff with its name and time span', () => {
+    renderSidebar();
 
-  it('renders the Logo', () => {
-    render(<RiffSidebar riffs={riffs} selectedId={null} onSelect={vi.fn()} />);
-    expect(screen.getByTestId('logo')).toBeInTheDocument();
+    const [first, second] = screen.getAllByRole('button');
+    expect(first).toHaveTextContent('First Riff');
+    expect(first).toHaveTextContent('00:23.3 – 00:35.3');
+    expect(second).toHaveTextContent('Second Riff');
+    expect(second).toHaveTextContent('01:01.0 – 01:04.5');
   });
 
-  it('renders one <li> per riff with correct title and timestamp', () => {
-    render(<RiffSidebar riffs={riffs} selectedId={null} onSelect={vi.fn()} />);
-    const items = screen.getAllByRole('listitem');
-    expect(items).toHaveLength(2);
+  it('marks the selected riff', () => {
+    renderSidebar({ selectedId: 'r2' });
 
-    expect(screen.getByText('First Riff')).toBeInTheDocument();
-
-    expect(screen.getByText('00:23 •12s')).toBeInTheDocument();
-
-    expect(screen.getByText('Second Riff')).toBeInTheDocument();
-
-    expect(screen.getByText('01:01 •4s')).toBeInTheDocument();
+    const [first, second] = screen.getAllByRole('button');
+    expect(first).not.toHaveAttribute('aria-current');
+    expect(second).toHaveAttribute('aria-current', 'true');
   });
 
-  it('only the selected riff has `border-white`', () => {
-    render(<RiffSidebar riffs={riffs} selectedId="r2" onSelect={vi.fn()} />);
-    const firstItem = screen.getByText('First Riff').closest('li');
-    const secondItem = screen.getByText('Second Riff').closest('li');
-    expect(firstItem).toHaveClass('border-transparent');
-    expect(secondItem).toHaveClass('border-white');
+  it('calls onSelect with the riff that was clicked', async () => {
+    const { onSelect, user } = renderSidebar();
+
+    await user.click(screen.getByRole('button', { name: /second riff/i }));
+
+    expect(onSelect).toHaveBeenCalledWith('r2');
   });
 
-  it('invokes onSelect with the correct id when clicked', async () => {
-    const onSelect = vi.fn();
-    render(<RiffSidebar riffs={riffs} selectedId={null} onSelect={onSelect} />);
-    const user = userEvent.setup();
+  it('flags the riffs that overlap another', () => {
+    renderSidebar({ overlappingIds: new Set(['r2']) });
 
-    const firstItem = screen.getByText('First Riff').closest('li')!;
-    await user.click(firstItem);
-    expect(onSelect).toHaveBeenCalledWith('r1');
+    const [first, second] = screen.getAllByRole('button');
+    expect(first).not.toHaveTextContent(/overlaps/i);
+    expect(second).toHaveTextContent(/overlaps/i);
   });
 
   it('falls back to the riff text, then a placeholder, when there is no title', () => {
-    render(
-      <RiffSidebar
-        riffs={[
-          makeRiff({ id: 'r1', title: '', text: 'Just the text' }),
-          makeRiff({ id: 'r2', title: '', text: '' }),
-        ]}
-        selectedId={null}
-        onSelect={vi.fn()}
-      />,
-    );
+    renderSidebar({
+      riffs: [
+        makeRiff({ id: 'r1', title: '', text: 'Just the text' }),
+        makeRiff({ id: 'r2', title: '', text: '' }),
+      ],
+    });
 
     expect(screen.getByText('Just the text')).toBeInTheDocument();
     expect(screen.getByText('Untitled riff')).toBeInTheDocument();
   });
 
   it('says so when there are no riffs', () => {
-    render(<RiffSidebar riffs={[]} selectedId={null} onSelect={vi.fn()} />);
+    renderSidebar({ riffs: [] });
 
-    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
     expect(screen.getByText(/no riffs yet/i)).toBeInTheDocument();
   });
 });

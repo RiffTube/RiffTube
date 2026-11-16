@@ -40,6 +40,19 @@ describe('YouTubePlayer', () => {
     });
   });
 
+  it('hands the player over when it is ready and takes it back on unmount', () => {
+    const onPlayer = vi.fn();
+    const { unmount } = render(
+      <YouTubePlayer videoId="abc123" onTime={vi.fn()} onPlayer={onPlayer} />,
+    );
+
+    expect(onPlayer).toHaveBeenLastCalledWith(mockPlayer);
+
+    unmount();
+
+    expect(onPlayer).toHaveBeenLastCalledWith(null);
+  });
+
   it('polls the player every 250ms and calls onTime', () => {
     vi.useFakeTimers();
     try {
