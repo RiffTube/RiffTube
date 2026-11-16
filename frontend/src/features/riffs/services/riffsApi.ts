@@ -54,14 +54,13 @@ async function sendRiff(
   method: 'POST' | 'PATCH',
   riff: NewRiff | RiffChanges,
   action: string,
+  keepalive = false,
 ): Promise<Riff> {
   const res = await fetch(url, {
     method,
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    // Timing saves are debounced and can still be on their way out as the
-    // page closes; keepalive lets the request outlive the page.
-    keepalive: true,
+    keepalive,
     body: JSON.stringify({ riff }),
   });
   if (!res.ok) return saveError(res, action);
@@ -91,11 +90,18 @@ export function updateRiff(
   riffId: string,
   changes: RiffChanges,
 ): Promise<Riff> {
+  // Timing saves are debounced and can still be on their way out as the page
+  // closes; keepalive lets them outlive it. Browsers cap keepalive bodies at
+  // 64 KiB in total, so it is kept off saves that carry text.
+  const timingOnly = Object.keys(changes).every(
+    key => key === 'start' || key === 'end',
+  );
   return sendRiff(
     `${riffsUrl(projectId)}/${riffId}`,
     'PATCH',
     changes,
     'Could not save the riff',
+    timingOnly,
   );
 }
 

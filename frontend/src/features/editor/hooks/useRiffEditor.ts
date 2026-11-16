@@ -322,6 +322,9 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
   /** Adds a riff at the playhead, pauses, and asks for the text box to be focused. */
   const addAtPlayhead = useCallback(async () => {
     if (isAdding || !confirmDiscard()) return;
+    // The user agreed to drop these (or there were none). From here on, a
+    // dirty draft can only mean something typed while the request is out.
+    setEdits({});
 
     player.pause();
     const start = roundTime(player.getTime());
@@ -408,6 +411,9 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
       if (index === -1) return;
       const riff = riffs[index];
 
+      // Undo brings back the saved riff, not what was being typed into it.
+      if (riffId === selectedId && !confirmDiscard()) return;
+
       // A timing edit still waiting to be saved is left alone: it is saved as
       // usual, so the riff comes back intact if the delete is undone.
       flushPendingDelete();
@@ -423,7 +429,7 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
       setPendingDelete(riff);
       deleteTimer.current = setTimeout(flushPendingDelete, UNDO_DELETE_MS);
     },
-    [riffs, selectedId, flushPendingDelete],
+    [riffs, selectedId, confirmDiscard, flushPendingDelete],
   );
 
   const undoDelete = useCallback(() => {
@@ -443,7 +449,7 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
 
   /* ---------- leaving ---------- */
 
-  useUnsavedChangesGuard(isDirty);
+  useUnsavedChangesGuard(isDirty, timingEdits.size > 0);
 
   // Nothing that was promised may be lost when the editor goes away: send the
   // timing saves and the delete that are still waiting.

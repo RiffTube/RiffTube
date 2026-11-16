@@ -269,6 +269,39 @@ describe('<EditorPage /> selecting', () => {
 });
 
 describe('<EditorPage /> leaving', () => {
+  const closingTabIsHeldUp = () => {
+    const closing = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(closing);
+    return closing.defaultPrevented;
+  };
+
+  it('holds up closing the tab while there is unsaved text', async () => {
+    const { user } = await openEditor();
+    expect(closingTabIsHeldUp()).toBe(false);
+
+    await user.type(textField(), '!');
+    expect(closingTabIsHeldUp()).toBe(true);
+
+    await user.keyboard('{Escape}');
+    expect(closingTabIsHeldUp()).toBe(false);
+  });
+
+  it('holds up closing the tab until a timing change has been saved', async () => {
+    const { user } = await openEditor();
+
+    await user.click(
+      screen.getByRole('button', { name: 'Move start 0.1 seconds later' }),
+    );
+    expect(closingTabIsHeldUp()).toBe(true);
+
+    await waitFor(
+      () =>
+        expect(screen.getByRole('status')).toHaveTextContent(/timing saved/i),
+      { timeout: 3000 },
+    );
+    expect(closingTabIsHeldUp()).toBe(false);
+  });
+
   it('asks before the Back button drops unsaved changes, and stays on "cancel"', async () => {
     const { router, user } = await openEditor();
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
@@ -388,6 +421,30 @@ describe('<EditorPage /> adding riffs', () => {
     expect(nameField()).toHaveValue('wait');
     expect(textField()).toHaveValue('Wait for it... Typed meanwhile');
     expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it('opens the new riff after the user agreed to drop unsaved changes', async () => {
+    const { user } = await openEditor();
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    await user.type(textField(), ' Unsaved');
+    player.now = 12;
+
+    await user.click(screen.getByRole('button', { name: '+ Riff' }));
+
+    await waitFor(() => expect(textField()).toHaveFocus());
+    expect(textField()).toHaveValue('');
+    expect(startField()).toHaveValue('00:12.0');
+  });
+
+  it('adds nothing when the user keeps their unsaved changes', async () => {
+    const { api, user } = await openEditor();
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await user.type(textField(), ' Unsaved');
+
+    await user.click(screen.getByRole('button', { name: '+ Riff' }));
+
+    expect(api.sent('POST')).toHaveLength(0);
+    expect(textField()).toHaveValue('Wait for it... Unsaved');
   });
 
   it('says so when the riff could not be added', async () => {
@@ -942,6 +999,25 @@ describe('<EditorPage /> deleting', () => {
     await waitFor(() =>
       expect(api.sent('DELETE')).toEqual([{ method: 'DELETE', id: 'r1' }]),
     );
+  });
+
+  it('asks before deleting a riff that has unsaved changes', async () => {
+    const { user } = await openEditor();
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await user.type(textField(), ' Unsaved');
+
+    await user.click(screen.getByRole('button', { name: /^delete$/i }));
+
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(sidebarRiffs()).toHaveLength(2);
+    expect(textField()).toHaveValue('Wait for it... Unsaved');
+    expect(screen.queryByText(/riff deleted/i)).toBeNull();
+
+    confirm.mockReturnValue(true);
+    await user.click(screen.getByRole('button', { name: /^delete$/i }));
+
+    expect(sidebarRiffs()).toHaveLength(1);
+    expect(screen.getByText(/riff deleted/i)).toBeInTheDocument();
   });
 
   it('still saves a timing edit made just before a delete that is undone', async () => {
