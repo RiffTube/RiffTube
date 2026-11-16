@@ -72,4 +72,40 @@ describe('<RiffOverlay />', () => {
     expect(screen.getByText('First riff')).toBeInTheDocument();
     expect(screen.getByText('Second riff')).toBeInTheDocument();
   });
+
+  it('shows a riff in its own colours and size, and the default look otherwise', () => {
+    render(
+      <RiffOverlay
+        currentTime={1}
+        riffs={[
+          {
+            id: 'styled',
+            start: 0,
+            end: 5,
+            text: 'Styled',
+            styling: { bgColor: '#112233', textColor: '#ffcc00', fontSize: 24 },
+          },
+          { id: 'plain', start: 0, end: 5, text: 'Plain', styling: {} },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText('Styled')).toHaveStyle({
+      backgroundColor: '#112233',
+      color: '#ffcc00',
+      fontSize: '24px',
+    });
+    expect(screen.getByText('Plain').getAttribute('style') ?? '').toBe('');
+  });
+
+  it('shows nothing for a riff whose text is still empty', () => {
+    const { container } = render(
+      <RiffOverlay
+        currentTime={1}
+        riffs={[{ id: 'blank', start: 0, end: 5, text: '   ' }]}
+      />,
+    );
+
+    expect(container.querySelectorAll('span')).toHaveLength(0);
+  });
 });

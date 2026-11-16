@@ -1,122 +1,73 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
-import type { Riff } from '@/features/riffs/types';
+import { makeRiff } from '@/testUtils/server';
 import RiffControls from './RiffControls';
 
-const riff: Riff = {
-  id: 'r1',
-  title: 'Original title',
-  start: 10,
-  end: 15,
-  text: 'Some text',
-  styling: {},
-  version: 1,
-};
+function renderControls(
+  props: Partial<Parameters<typeof RiffControls>[0]> = {},
+) {
+  const handlers = {
+    onChange: vi.fn(),
+    onSave: vi.fn(),
+    onRevert: vi.fn(),
+    onDelete: vi.fn(),
+  };
+  render(
+    <RiffControls
+      riff={makeRiff({ title: 'Original title' })}
+      isDirty={false}
+      isSaving={false}
+      {...handlers}
+      {...props}
+    />,
+  );
+  return { ...handlers, user: userEvent.setup() };
+}
 
 describe('<RiffControls />', () => {
-  it('returns null when riff is null', () => {
-    const { container } = render(
-      <RiffControls
-        canSave={false}
-        riff={null}
-        onChange={vi.fn()}
-        onUndo={vi.fn()}
-        onSave={vi.fn()}
-      />,
-    );
-    expect(container.firstChild).toBeNull();
+  it('shows the riff name', () => {
+    renderControls();
+
+    expect(screen.getByLabelText(/name/i)).toHaveValue('Original title');
   });
 
-  it('renders inputs with the correct initial values', () => {
-    render(
-      <RiffControls
-        canSave={true}
-        riff={riff}
-        onChange={vi.fn()}
-        onUndo={vi.fn()}
-        onSave={vi.fn()}
-      />,
-    );
-    const nameInput = screen.getByLabelText(/name/i);
-    const durInput = screen.getByLabelText(/duration/i);
+  it('reports each keystroke in the name as a title change', async () => {
+    const { onChange, user } = renderControls();
 
-    expect(nameInput).toHaveValue(riff.title);
-    expect(durInput).toHaveValue('5');
+    await user.type(screen.getByLabelText(/name/i), '!');
+
+    expect(onChange).toHaveBeenCalledWith({ title: 'Original title!' });
   });
 
-  it('calls onChange once per keystroke as the user types', async () => {
-    const onChange = vi.fn();
-    render(
-      <RiffControls
-        canSave={false}
-        riff={riff}
-        onChange={onChange}
-        onUndo={vi.fn()}
-      />,
-    );
-    const user = userEvent.setup();
-    const nameInput = screen.getByLabelText(/name/i);
+  it('keeps Save and Undo changes disabled until something changed', () => {
+    renderControls({ isDirty: false });
 
-    //  type "abc" → 3 calls
-
-    await user.type(nameInput, 'abc');
-
-    expect(onChange).toHaveBeenCalledTimes(3);
+    expect(
+      screen.getByRole('button', { name: /no changes to save/i }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: /undo changes/i }),
+    ).toBeDisabled();
   });
 
-  it('fires onSave with only id & title when Save is clicked', async () => {
-    const onSave = vi.fn();
-    render(
-      <RiffControls
-        canSave={true}
-        riff={{ ...riff, title: 'Saved!' }}
-        onChange={vi.fn()}
-        onUndo={vi.fn()}
-        onSave={onSave}
-      />,
-    );
-    const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /save/i }));
+  it('saves, reverts and deletes through its buttons', async () => {
+    const { onSave, onRevert, onDelete, user } = renderControls({
+      isDirty: true,
+    });
+
+    await user.click(screen.getByRole('button', { name: /save riff/i }));
+    await user.click(screen.getByRole('button', { name: /undo changes/i }));
+    await user.click(screen.getByRole('button', { name: /^delete$/i }));
 
     expect(onSave).toHaveBeenCalledTimes(1);
-    expect(onSave).toHaveBeenCalledWith({
-      id: riff.id,
-      title: 'Saved!',
-    });
+    expect(onRevert).toHaveBeenCalledTimes(1);
+    expect(onDelete).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onUndo when Undo changes is clicked', async () => {
-    const onUndo = vi.fn();
-    render(
-      <RiffControls
-        canSave={true}
-        riff={riff}
-        onChange={vi.fn()}
-        onUndo={onUndo}
-      />,
-    );
-    const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /undo changes/i }));
-    expect(onUndo).toHaveBeenCalledTimes(1);
-  });
+  it('cannot be saved twice while a save is on its way', () => {
+    renderControls({ isDirty: true, isSaving: true });
 
-  it('prevents editing the read-only duration field', async () => {
-    const onChange = vi.fn();
-    render(
-      <RiffControls
-        canSave={false}
-        riff={riff}
-        onChange={onChange}
-        onUndo={vi.fn()}
-      />,
-    );
-    const user = userEvent.setup();
-    const durInput = screen.getByLabelText(/duration/i);
-
-    expect(durInput).toHaveAttribute('readOnly');
-    await user.type(durInput, '123'); // Should do nothing
-    expect(onChange).not.toHaveBeenCalled();
-    expect(durInput).toHaveValue('5');
+    expect(screen.getByRole('button', { name: /save riff/i })).toBeDisabled();
   });
 });

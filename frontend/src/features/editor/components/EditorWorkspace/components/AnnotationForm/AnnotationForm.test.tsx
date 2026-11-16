@@ -1,59 +1,64 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { makeRiff } from '@/testUtils/server';
 import AnnotationForm from './AnnotationForm';
 
-const riff = makeRiff({ text: 'Wait for it...', start: 5, end: 9 });
-
-function renderForm() {
+function renderForm(riff = makeRiff({ text: 'Wait for it...' })) {
   const onChange = vi.fn();
-  const onTouched = vi.fn();
-  render(
-    <AnnotationForm riff={riff} onChange={onChange} onTouched={onTouched} />,
-  );
-  return { onChange, onTouched, user: userEvent.setup({ delay: null }) };
+  render(<AnnotationForm riff={riff} onChange={onChange} />);
+  return { onChange, user: userEvent.setup() };
 }
 
 describe('<AnnotationForm />', () => {
-  it('reports a touch on the first keystroke, ahead of the debounced change', async () => {
-    const { onChange, onTouched, user } = renderForm();
+  it('shows the riff text and the default look when no styling is set', () => {
+    renderForm();
 
-    await user.type(screen.getByPlaceholderText(/type riff text/i), '!');
-
-    expect(onTouched).toHaveBeenCalled();
-    // Still inside the 300ms window, so the draft has not been updated yet.
-    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/riff text/i)).toHaveValue('Wait for it...');
+    expect(screen.getByLabelText(/background/i)).toHaveValue('#000000');
+    expect(screen.getByLabelText(/text color/i)).toHaveValue('#ffffff');
+    expect(screen.getByLabelText(/font size/i)).toHaveValue('16');
   });
 
-  it('reports the text edit once the debounce expires', async () => {
+  it('shows the styling the riff already has', () => {
+    renderForm(
+      makeRiff({
+        styling: { bgColor: '#112233', textColor: '#ffcc00', fontSize: 24 },
+      }),
+    );
+
+    expect(screen.getByLabelText(/background/i)).toHaveValue('#112233');
+    expect(screen.getByLabelText(/text color/i)).toHaveValue('#ffcc00');
+    expect(screen.getByLabelText(/font size/i)).toHaveValue('24');
+  });
+
+  it('reports a text edit on the keystroke itself', async () => {
     const { onChange, user } = renderForm();
 
-    await user.type(screen.getByPlaceholderText(/type riff text/i), '!');
+    await user.type(screen.getByLabelText(/riff text/i), '!');
 
-    await waitFor(() =>
-      expect(onChange).toHaveBeenCalledWith({ text: 'Wait for it...!' }),
+    expect(onChange).toHaveBeenCalledWith({ text: 'Wait for it...!' });
+  });
+
+  it('reports style edits merged into the existing styling', async () => {
+    const { onChange, user } = renderForm(
+      makeRiff({ styling: { textColor: '#ffcc00', somethingElse: true } }),
     );
-  });
 
-  it('reports a touch and then a new end time when the duration changes', async () => {
-    const { onChange, onTouched } = renderForm();
-
-    // The input rejects intermediate empty values, so set it in one go.
-    fireEvent.change(screen.getByRole('spinbutton'), {
-      target: { value: '6' },
+    fireEvent.change(screen.getByLabelText(/background/i), {
+      target: { value: '#112233' },
     });
+    await user.selectOptions(screen.getByLabelText(/font size/i), '24');
 
-    expect(onTouched).toHaveBeenCalled();
-    await waitFor(() => expect(onChange).toHaveBeenCalledWith({ end: 11 }));
-  });
-
-  it('stays quiet when nothing is edited', async () => {
-    const { onChange, onTouched } = renderForm();
-
-    await new Promise(resolve => setTimeout(resolve, 400));
-
-    expect(onTouched).not.toHaveBeenCalled();
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onChange).toHaveBeenNthCalledWith(1, {
+      styling: {
+        textColor: '#ffcc00',
+        somethingElse: true,
+        bgColor: '#112233',
+      },
+    });
+    expect(onChange).toHaveBeenNthCalledWith(2, {
+      styling: { textColor: '#ffcc00', somethingElse: true, fontSize: 24 },
+    });
   });
 });

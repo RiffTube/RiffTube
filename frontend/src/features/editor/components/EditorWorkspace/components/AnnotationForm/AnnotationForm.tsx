@@ -1,106 +1,85 @@
-import { useEffect, useState } from 'react';
-import { riffDuration, type Riff } from '@/features/riffs/types';
+import type { Ref } from 'react';
+import {
+  overlayStyle,
+  type Riff,
+  type RiffContent,
+} from '@/features/riffs/types';
 
 interface Props {
+  /** The riff being edited, unsaved changes included */
   riff: Riff;
-  onChange: (changes: Partial<Riff>) => void;
-  /**
-   * Called on the first keystroke, before the debounce below reports the edit.
-   * Without it a refresh landing inside those 300ms would reset these inputs
-   * and take the pending edit with it.
-   */
-  onTouched?: () => void;
+  onChange: (changes: Partial<RiffContent>) => void;
+  /** Lets the editor put the cursor in the text box after adding a riff */
+  textRef?: Ref<HTMLTextAreaElement>;
 }
-function AnnotationForm({ riff, onChange, onTouched }: Props) {
-  const [text, setText] = useState(riff.text);
-  const [bgColor, setBgColor] = useState('#000000');
-  const [textColor, setTextColor] = useState('#ffffff');
-  const [fontSize, setFontSize] = useState('16');
-  const [duration, setDuration] = useState(String(riffDuration(riff)));
 
-  /* Synchronise when the parent selects a different riff */
-  useEffect(() => {
-    setText(riff.text);
-    setDuration(String(riffDuration(riff)));
-    // bgColor / textColor / fontSize would come from riff.styling later
-  }, [riff]);
+const FONT_SIZES = [12, 14, 16, 18, 20, 24, 32];
 
-  useEffect(() => {
-    const id = setTimeout(() => {
-      // Report only what actually differs, so an untouched form stays quiet.
-      // The riff stores start/end, so a duration edit moves `end`.
-      const changes: Partial<Riff> = {};
-      const seconds = Number(duration);
-      if (text !== riff.text) changes.text = text;
-      if (seconds !== riffDuration(riff)) changes.end = riff.start + seconds;
-      // later: styling: { bgColor, textColor, fontSize: Number(fontSize) }
-      if (Object.keys(changes).length > 0) onChange(changes);
-    }, 300);
-
-    return () => clearTimeout(id);
-  }, [text, duration, riff, onChange]);
+/** The riff's words and how they look. Every change is reported as it happens. */
+function AnnotationForm({ riff, onChange, textRef }: Props) {
+  const style = overlayStyle(riff.styling);
+  const changeStyle = (changes: Partial<typeof style>) =>
+    onChange({ styling: { ...riff.styling, ...changes } });
 
   return (
-    <section className="space-y-4 rounded-lg bg-transparent p-4">
-      <h3 className="font-medium">Add an annotation</h3>
-      <textarea
-        rows={4}
-        value={text}
-        onChange={e => {
-          onTouched?.();
-          setText(e.target.value);
-        }}
-        placeholder="Type riff text that will appear over the video…"
-        className="w-full max-w-full resize-none rounded-lg border-2 border-smoke bg-transparent p-2 text-sm xl:text-base"
-      />
+    <section className="space-y-4 rounded-lg bg-transparent">
+      <div>
+        <label htmlFor="riff-text" className="mb-1 block font-medium">
+          Riff text
+        </label>
+        <textarea
+          id="riff-text"
+          ref={textRef}
+          rows={4}
+          value={riff.text}
+          onChange={event => onChange({ text: event.target.value })}
+          placeholder="Type riff text that will appear over the video…"
+          className="w-full max-w-full resize-none rounded-lg border-2 border-smoke bg-transparent p-2 text-sm focus:border-white focus:outline-none xl:text-base"
+        />
+      </div>
       <div className="flex flex-wrap gap-4">
         <div>
-          <label className="mb-1 block text-xs">Background</label>
+          <label htmlFor="riff-bg-color" className="mb-1 block text-xs">
+            Background
+          </label>
           <input
+            id="riff-bg-color"
             type="color"
-            value={bgColor}
-            onChange={e => setBgColor(e.target.value)}
+            value={style.bgColor}
+            onChange={event => changeStyle({ bgColor: event.target.value })}
             className="h-8 w-12 border-0 p-0"
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs">Text color</label>
+          <label htmlFor="riff-text-color" className="mb-1 block text-xs">
+            Text color
+          </label>
           <input
+            id="riff-text-color"
             type="color"
-            value={textColor}
-            onChange={e => setTextColor(e.target.value)}
+            value={style.textColor}
+            onChange={event => changeStyle({ textColor: event.target.value })}
             className="h-8 w-12 border-0 p-0"
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs">Font size</label>
+          <label htmlFor="riff-font-size" className="mb-1 block text-xs">
+            Font size
+          </label>
           <select
-            value={fontSize}
-            onChange={e => setFontSize(e.target.value)}
+            id="riff-font-size"
+            value={style.fontSize}
+            onChange={event =>
+              changeStyle({ fontSize: Number(event.target.value) })
+            }
             className="rounded bg-gray-900 p-2"
           >
-            {[12, 14, 16, 18, 20, 24, 32].map(size => (
-              <option key={size}>{size}</option>
+            {FONT_SIZES.map(size => (
+              <option key={size} value={size}>
+                {size}
+              </option>
             ))}
           </select>
-        </div>
-        <div>
-          <label className="mb-1 block text-xs">Duration&nbsp;(s)</label>
-          <input
-            type="number"
-            min={1}
-            value={duration}
-            onChange={e => {
-              onTouched?.();
-              const value = parseInt(e.target.value, 10);
-              if (!isNaN(value) && value >= 1 && value <= 3600) {
-                setDuration(String(value));
-              } else {
-                setDuration('1'); // Default to 1 second if invalid
-              }
-            }}
-            className="w-24 rounded bg-gray-900 p-2 text-center"
-          />
         </div>
       </div>
     </section>
