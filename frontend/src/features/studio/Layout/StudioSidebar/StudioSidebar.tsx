@@ -13,7 +13,7 @@ export default function StudioSidebar() {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/studio/projects" className={link}>
+          <NavLink to="/dashboard" className={link}>
             My Projects
           </NavLink>
         </li>
