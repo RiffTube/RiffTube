@@ -1,13 +1,16 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import YouTube from 'react-youtube';
 import Button from '@/components/Button';
 import TextInput from '@/components/TextInput';
 import { extractYouTubeVideoId } from '@/helpers/youtube';
+import { projectsQueryKey } from '../../hooks';
 import { createProject } from '../../services/projectsApi';
 
 function CreateProjectPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [title, setTitle] = useState('');
   const [youtubeInput, setYoutubeInput] = useState('');
@@ -29,6 +32,8 @@ function CreateProjectPage() {
     setError(null);
     try {
       const project = await createProject({ title: titleTrim, videoId });
+      // The dashboard's list is now out of date.
+      void queryClient.invalidateQueries({ queryKey: projectsQueryKey });
       navigate(`/dashboard/projects/${project.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create project');

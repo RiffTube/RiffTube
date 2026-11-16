@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import RiffSidebar, { SidebarRiff } from './RiffSidebar';
+import { makeRiff } from '@/testUtils/server';
+import RiffSidebar from './RiffSidebar';
 
 // 1) Mock Logo so we don’t need its implementation
 vi.mock('@/components/Logo', () => ({
@@ -8,21 +9,9 @@ vi.mock('@/components/Logo', () => ({
 }));
 
 describe('<RiffSidebar />', () => {
-  const riffs: SidebarRiff[] = [
-    {
-      id: 'r1',
-      title: 'First Riff',
-      thumbnail: 'thumb1.jpg',
-      start: 23.34,
-      duration: 12,
-    },
-    {
-      id: 'r2',
-      title: 'Second Riff',
-      thumbnail: 'thumb2.jpg',
-      start: 61,
-      duration: 3.5,
-    },
+  const riffs = [
+    makeRiff({ id: 'r1', title: 'First Riff', start: 23.34, end: 35.34 }),
+    makeRiff({ id: 'r2', title: 'Second Riff', start: 61, end: 64.5 }),
   ];
 
   it('renders the Logo', () => {
@@ -62,16 +51,26 @@ describe('<RiffSidebar />', () => {
     expect(onSelect).toHaveBeenCalledWith('r1');
   });
 
-  it('renders each thumbnail and you can assert src even though alt=""', () => {
-    render(<RiffSidebar riffs={riffs} selectedId={null} onSelect={vi.fn()} />);
-    // include hidden so that alt="" images are found
-    const imgs = screen.getAllByRole('presentation') as HTMLImageElement[];
-    expect(imgs).toHaveLength(2);
+  it('falls back to the riff text, then a placeholder, when there is no title', () => {
+    render(
+      <RiffSidebar
+        riffs={[
+          makeRiff({ id: 'r1', title: '', text: 'Just the text' }),
+          makeRiff({ id: 'r2', title: '', text: '' }),
+        ]}
+        selectedId={null}
+        onSelect={vi.fn()}
+      />,
+    );
 
-    expect(imgs[0]).toHaveAttribute('src', 'thumb1.jpg');
-    expect(imgs[0]).toHaveAttribute('alt', '');
+    expect(screen.getByText('Just the text')).toBeInTheDocument();
+    expect(screen.getByText('Untitled riff')).toBeInTheDocument();
+  });
 
-    expect(imgs[1]).toHaveAttribute('src', 'thumb2.jpg');
-    expect(imgs[1]).toHaveAttribute('alt', '');
+  it('says so when there are no riffs', () => {
+    render(<RiffSidebar riffs={[]} selectedId={null} onSelect={vi.fn()} />);
+
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+    expect(screen.getByText(/no riffs yet/i)).toBeInTheDocument();
   });
 });

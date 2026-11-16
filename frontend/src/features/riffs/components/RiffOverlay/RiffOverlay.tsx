@@ -1,12 +1,7 @@
-export interface Riff {
-  id: string;
-  start: number;
-  end: number;
-  text: string;
-}
+import type { Riff } from '../../types';
 
 interface Props {
-  riffs: Riff[];
+  riffs: Pick<Riff, 'id' | 'start' | 'end' | 'text'>[];
   currentTime: number;
 }
 const epsilon = 0.25; // quarters of a second

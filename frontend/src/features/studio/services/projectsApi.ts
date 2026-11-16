@@ -10,6 +10,40 @@ export interface ProjectDTO {
   videoId: string | null;
   videoUrl: string | null;
   visibility: string;
+  /** ISO timestamp; present on everything the API returns today. */
+  updatedAt?: string;
+}
+
+/** A failed API call, keeping the HTTP status so callers can tell 404 from the rest. */
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
+export async function fetchProjects(): Promise<ProjectDTO[]> {
+  const res = await fetch('/api/v1/projects', { credentials: 'include' });
+  if (!res.ok)
+    throw new ApiError(`Failed to load projects: ${res.status}`, res.status);
+  const data = (await res.json()) as { projects: ProjectDTO[] };
+  return data.projects;
+}
+
+export async function fetchProject(projectId: string): Promise<ProjectDTO> {
+  const res = await fetch(`/api/v1/projects/${projectId}`, {
+    credentials: 'include',
+  });
+  if (!res.ok)
+    throw new ApiError(
+      `Failed to load project ${projectId}: ${res.status}`,
+      res.status,
+    );
+  const data = (await res.json()) as { project: ProjectDTO };
+  return data.project;
 }
 
 export interface CreateProjectResponse {

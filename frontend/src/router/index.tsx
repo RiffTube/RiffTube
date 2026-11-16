@@ -3,7 +3,6 @@ import AuthSuccessPage from '@/features/auth/components/AuthSuccessPage/AuthSucc
 import RequireAuth from '@/features/auth/guards/RequireAuth';
 import EditorPage from '@/features/editor/routes/EditorPage';
 import LandingPage from '@/features/marketing/routes/LandingPage';
-import DemoPlayer from '@/features/spike/DemoPlayer';
 import StudioLayout from '@/features/studio/Layout/StudioLayout';
 import CreateProjectPage from '@/features/studio/routes/CreateProjectPage';
 import HomeDashboard from '@/features/studio/routes/HomeDashboard';
@@ -13,7 +12,6 @@ function AppRouter() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/demo" element={<DemoPlayer />} />
         <Route path="/auth/success" element={<AuthSuccessPage />} />
 
         {/* Protected studio area */}

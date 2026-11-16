@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import ChannelAnalyticsCard from './cards/ChannelAnalyticsCard';
 import ExploreRecommendationsCard from './cards/ExploreRecommendationsCard';
+import ProjectsCard from './cards/ProjectsCard';
 import {
   fakeLoad,
   fixtures,
@@ -30,6 +31,7 @@ export default function HomeDashboard() {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
       <div className="space-y-4 md:col-span-2">
+        <ProjectsCard />
         <ChannelAnalyticsCard data={analytics} />
       </div>
       <div className="space-y-4">

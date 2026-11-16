@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import { dummyRiffs } from '../../../../data/dummyRiffs';
+import { makeRiff } from '@/testUtils/server';
 import VideoCard from './VideoCard';
 
-vi.mock('../../../../../player/components/YouTubePlayer', () => ({
+vi.mock('@/features/player/components/YouTubePlayer', () => ({
   default: ({
     videoId,
     onTime,
@@ -16,7 +16,7 @@ vi.mock('../../../../../player/components/YouTubePlayer', () => ({
   },
 }));
 
-vi.mock('../../../../../riffs/components/RiffOverlay', () => ({
+vi.mock('@/features/riffs/components/RiffOverlay', () => ({
   default: ({
     riffs,
     currentTime,
@@ -34,29 +34,40 @@ vi.mock('../../../../../riffs/components/RiffOverlay', () => ({
   ),
 }));
 
+const riffs = [
+  makeRiff(),
+  makeRiff({ id: 'r2', start: 18, end: 25, text: 'Classic!' }),
+];
+
 describe('<VideoCard />', () => {
-  it('renders the YouTubePlayer with the provided videoId', () => {
-    render(
-      <VideoCard riffs={dummyRiffs} selectedId={null} videoId="MY_CUSTOM_ID" />,
-    );
+  it('renders the YouTubePlayer with the project videoId', () => {
+    render(<VideoCard riffs={riffs} selectedId={null} videoId="MY_VIDEO_ID" />);
 
     expect(screen.getByTestId('youtube-player')).toHaveTextContent(
-      'MY_CUSTOM_ID',
+      'MY_VIDEO_ID',
     );
   });
 
-  it('uses the fallback videoId when none is provided', () => {
-    render(<VideoCard riffs={dummyRiffs} selectedId={null} />);
+  it('passes the riffs and current time straight to the overlay', () => {
+    render(<VideoCard riffs={riffs} selectedId={null} videoId="MY_VIDEO_ID" />);
 
-    expect(screen.getByTestId('youtube-player')).toHaveTextContent(
-      'dQw4w9WgXcQ',
-    );
+    const overlay = screen.getByTestId('riff-overlay');
+    expect(overlay).toHaveAttribute('data-current-time', '25');
+    expect(overlay).toHaveTextContent('Wait for it...');
+    expect(overlay).toHaveTextContent('Classic!');
   });
 
   it('renders an empty overlay when no riffs are provided', () => {
-    render(<VideoCard riffs={[]} selectedId={null} />);
+    render(<VideoCard riffs={[]} selectedId={null} videoId="MY_VIDEO_ID" />);
 
     const overlay = screen.getByTestId('riff-overlay');
     expect(overlay.children.length).toBe(0);
+  });
+
+  it('shows a message instead of a player when the project has no video', () => {
+    render(<VideoCard riffs={riffs} selectedId={null} videoId={null} />);
+
+    expect(screen.queryByTestId('youtube-player')).toBeNull();
+    expect(screen.getByText(/no video/i)).toBeInTheDocument();
   });
 });

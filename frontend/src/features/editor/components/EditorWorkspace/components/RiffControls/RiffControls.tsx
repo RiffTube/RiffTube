@@ -1,11 +1,11 @@
 import Button from '@/components/Button'; // if you have a shared Button; else keep <button>
 import TextInput from '@/components/TextInput';
-import type { DummyRiff } from '../../../../data/dummyRiffs';
+import { riffDuration, type Riff } from '@/features/riffs/types';
 
 interface Props {
-  riff: DummyRiff | null;
-  onChange: (updated: DummyRiff) => void;
-  onSave?: (changes: Partial<DummyRiff>) => void;
+  riff: Riff | null;
+  onChange: (updated: Riff) => void;
+  onSave?: (changes: Partial<Riff>) => void;
   onUndo: () => void;
   canSave: boolean;
 }
@@ -22,7 +22,6 @@ function RiffControls({ riff, onChange, onSave, onUndo, canSave }: Props) {
     onSave?.({
       id: riff.id,
       title: riff.title,
-      duration: riff.duration,
     });
 
   return (
@@ -38,11 +37,11 @@ function RiffControls({ riff, onChange, onSave, onUndo, canSave }: Props) {
         className="w-56"
       />
 
-      {/* Duration field (read‑only) */}
+      {/* Duration field (read‑only, derived from start/end) */}
       <TextInput
         id="riff-duration"
         label="Duration (s)"
-        value={String(riff.duration)}
+        value={String(riffDuration(riff))}
         readOnly
       />
 
