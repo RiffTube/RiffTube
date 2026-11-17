@@ -1,5 +1,5 @@
 import { ApiError } from '@/features/studio/services/projectsApi';
-import type { Riff, RiffContent, RiffTiming } from '../types';
+import type { Riff, RiffContent, RiffTiming, RiffVersion } from '../types';
 
 interface RiffDTO extends Omit<Riff, 'title' | 'styling'> {
   title: string | null;
@@ -119,4 +119,48 @@ export async function deleteRiff(
   // 404 means it is already gone, which is what was asked for.
   if (!res.ok && res.status !== 404)
     throw new ApiError(`Could not delete the riff (${res.status})`, res.status);
+}
+
+const versionsUrl = (riffId: string) => `/api/v1/riffs/${riffId}/versions`;
+
+interface RiffVersionDTO extends Omit<RiffVersion, 'styling'> {
+  styling: RiffVersion['styling'] | null;
+}
+
+/** Every saved version of a riff, newest first. */
+export async function fetchRiffVersions(
+  riffId: string,
+): Promise<RiffVersion[]> {
+  const res = await fetch(versionsUrl(riffId), { credentials: 'include' });
+  if (!res.ok)
+    throw new ApiError(
+      `Could not load the revision history (${res.status})`,
+      res.status,
+    );
+  const data = (await res.json()) as { versions: RiffVersionDTO[] };
+  return data.versions.map(version => ({
+    ...version,
+    styling: version.styling ?? {},
+  }));
+}
+
+/**
+ * Makes an older version current again. History is never rewritten: the API
+ * copies that version's text and styling into a new version and returns the riff.
+ */
+export async function restoreRiffVersion(
+  riffId: string,
+  versionId: string,
+): Promise<Riff> {
+  const res = await fetch(`${versionsUrl(riffId)}/${versionId}/restore`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  if (!res.ok)
+    throw new ApiError(
+      `Could not restore that version (${res.status})`,
+      res.status,
+    );
+  const data = (await res.json()) as { riff: RiffDTO };
+  return toRiff(data.riff);
 }

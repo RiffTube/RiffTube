@@ -65,8 +65,11 @@ const classic = makeRiff({
 });
 
 /** Starts the fake API with these riffs and opens the editor on the project. */
-async function openEditor(riffs: Riff[] = [wait, classic]) {
-  const api = fakeRiffsApi(project, riffs);
+async function openEditor(
+  riffs: Riff[] = [wait, classic],
+  olderVersions: Parameters<typeof fakeRiffsApi>[2] = {},
+) {
+  const api = fakeRiffsApi(project, riffs, olderVersions);
   server.use(...api.handlers);
   const view = renderWithQuery(<EditorPage />, {
     route: '/dashboard/projects/p1',
@@ -97,6 +100,8 @@ const flushQueryUpdates = () =>
 const sidebar = () => screen.getByRole('complementary', { hidden: true });
 const sidebarRiffs = () =>
   within(sidebar()).getAllByRole('button', { hidden: true });
+/** What is showing over the video right now */
+const overVideo = () => within(screen.getByTestId('riff-overlay'));
 const nameField = () => screen.getByLabelText(/^name/i);
 const textField = () => screen.getByLabelText(/riff text/i);
 const startField = () => screen.getByLabelText('Start');
@@ -1085,5 +1090,190 @@ describe('<EditorPage /> deleting', () => {
     await waitFor(() =>
       expect(within(sidebar()).getByText('wait')).toBeInTheDocument(),
     );
+  });
+});
+
+describe('<EditorPage /> revision history', () => {
+  /** "wait" as its third version, after two earlier wordings. */
+  const openWithHistory = () =>
+    openEditor([wait, classic], {
+      r1: [
+        { text: 'First draft', styling: {} },
+        { text: 'Second thoughts', styling: { fontSize: 24 } },
+      ],
+    });
+
+  const openHistory = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.click(screen.getByRole('button', { name: /revision history/i }));
+    return screen.findAllByRole('radio');
+  };
+
+  it('lists the versions of the selected riff once the panel is opened', async () => {
+    const { user } = await openWithHistory();
+
+    const options = await openHistory(user);
+
+    expect(options).toHaveLength(3);
+    expect(
+      screen.getByRole('radio', { name: /version 3 \(current\)/i }),
+    ).toBeChecked();
+    expect(
+      screen.getByRole('radio', { name: /version 1/i }),
+    ).toHaveAccessibleName(/first draft/i);
+  });
+
+  it('previews an older version over the video without changing the riff', async () => {
+    player.now = 6;
+    const { api, user } = await openWithHistory();
+    await openHistory(user);
+
+    await user.click(screen.getByRole('radio', { name: /version 2/i }));
+
+    expect(overVideo().getByText('Second thoughts')).toHaveStyle({
+      fontSize: '24px',
+    });
+    expect(screen.getByTestId('revision-preview')).toHaveTextContent(
+      'Second thoughts',
+    );
+    // The riff itself is untouched
+    expect(textField()).toHaveValue('Wait for it...');
+    expect(api.restores).toHaveLength(0);
+
+    await user.click(screen.getByRole('radio', { name: /version 3/i }));
+
+    expect(overVideo().getByText('Wait for it...')).toBeInTheDocument();
+    expect(screen.queryByTestId('revision-preview')).toBeNull();
+  });
+
+  it('restores an older version as a new one', async () => {
+    const { api, user } = await openWithHistory();
+    await openHistory(user);
+    await user.click(screen.getByRole('radio', { name: /version 2/i }));
+
+    await user.click(
+      screen.getByRole('button', { name: /restore this version/i }),
+    );
+
+    await waitFor(() => expect(textField()).toHaveValue('Second thoughts'));
+    expect(api.restores).toEqual([{ riffId: 'r1', versionId: 'r1-v2' }]);
+    expect(screen.getByLabelText(/font size/i)).toHaveValue('24');
+    // History grew instead of being rewritten, and the new version is current
+    expect(
+      await screen.findByRole('radio', { name: /version 4 \(current\)/i }),
+    ).toBeChecked();
+    expect(screen.getAllByRole('radio')).toHaveLength(4);
+    expect(screen.queryByTestId('revision-preview')).toBeNull();
+    expect(api.versions('r1').map(version => version.text)).toEqual([
+      'First draft',
+      'Second thoughts',
+      'Wait for it...',
+      'Second thoughts',
+    ]);
+  });
+
+  it('leaves the name and timing alone when restoring', async () => {
+    const { user } = await openWithHistory();
+    await openHistory(user);
+    await user.click(screen.getByRole('radio', { name: /version 1/i }));
+
+    await user.click(
+      screen.getByRole('button', { name: /restore this version/i }),
+    );
+
+    await waitFor(() => expect(textField()).toHaveValue('First draft'));
+    expect(nameField()).toHaveValue('wait');
+    expect(startField()).toHaveValue('00:05.0');
+    expect(endField()).toHaveValue('00:09.0');
+  });
+
+  it('asks before a restore drops unsaved changes, and does nothing on "cancel"', async () => {
+    const { api, user } = await openWithHistory();
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await user.type(textField(), ' Unsaved');
+    await openHistory(user);
+    await user.click(screen.getByRole('radio', { name: /version 2/i }));
+
+    await user.click(
+      screen.getByRole('button', { name: /restore this version/i }),
+    );
+
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(api.restores).toHaveLength(0);
+    expect(textField()).toHaveValue('Wait for it... Unsaved');
+    // Still looking at the old version, free to try again
+    expect(screen.getByTestId('revision-preview')).toBeInTheDocument();
+  });
+
+  it('restores over unsaved changes once the user agrees', async () => {
+    const { user } = await openWithHistory();
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    await user.type(textField(), ' Unsaved');
+    await openHistory(user);
+    await user.click(screen.getByRole('radio', { name: /version 2/i }));
+
+    await user.click(
+      screen.getByRole('button', { name: /restore this version/i }),
+    );
+
+    await waitFor(() => expect(textField()).toHaveValue('Second thoughts'));
+    expect(screen.getByRole('button', { name: /save/i })).toBeDisabled();
+  });
+
+  it('says so in the panel when a restore fails, and changes nothing', async () => {
+    const { user } = await openWithHistory();
+    server.use(
+      http.post('*/api/v1/riffs/r1/versions/:versionId/restore', () =>
+        HttpResponse.json({ error: 'boom' }, { status: 500 }),
+      ),
+    );
+    await openHistory(user);
+    await user.click(screen.getByRole('radio', { name: /version 2/i }));
+
+    await user.click(
+      screen.getByRole('button', { name: /restore this version/i }),
+    );
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /version 2 could not be restored/i,
+    );
+    expect(textField()).toHaveValue('Wait for it...');
+    expect(
+      screen.getByRole('button', { name: /restore this version/i }),
+    ).toBeEnabled();
+  });
+
+  it('adds a version to the open history when the text is saved', async () => {
+    const { user } = await openWithHistory();
+    await openHistory(user);
+
+    await user.type(textField(), ' Again.{Meta>}s{/Meta}');
+
+    expect(
+      await screen.findByRole('radio', { name: /version 4 \(current\)/i }),
+    ).toHaveAccessibleName(/wait for it\.\.\. again\./i);
+    expect(screen.getAllByRole('radio')).toHaveLength(4);
+  });
+
+  it('shows each riff its own history and drops the preview on switching', async () => {
+    player.now = 6;
+    const { user } = await openWithHistory();
+    await openHistory(user);
+    await user.click(screen.getByRole('radio', { name: /version 2/i }));
+    expect(overVideo().getByText('Second thoughts')).toBeInTheDocument();
+
+    await user.click(sidebarRiffs()[1]);
+
+    // The other riff's panel starts closed, with only its own history
+    expect(
+      screen.getByRole('button', { name: /revision history/i }),
+    ).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByTestId('revision-preview')).toBeNull();
+    expect(await openHistory(user)).toHaveLength(1);
+
+    // Back on "wait", nothing of the old version lingers
+    await user.click(sidebarRiffs()[0]);
+    expect(nameField()).toHaveValue('wait');
+    expect(screen.queryByText('Second thoughts')).toBeNull();
+    expect(screen.queryByTestId('revision-preview')).toBeNull();
   });
 });

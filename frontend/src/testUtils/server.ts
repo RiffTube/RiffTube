@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import type { Riff } from '@/features/riffs/types';
+import type { Riff, RiffVersion } from '@/features/riffs/types';
 import type { ProjectDTO } from '@/features/studio/services/projectsApi';
 
 /**
@@ -59,10 +59,41 @@ interface RecordedRequest {
  * the same rules (timing moves the riff, text/styling changes bump the version,
  * end must come after start) and records every write it receives.
  */
-export function fakeRiffsApi(project: ProjectDTO, initial: Riff[] = []) {
+export function fakeRiffsApi(
+  project: ProjectDTO,
+  initial: Riff[] = [],
+  /** Older versions per riff id, oldest first; the riff itself is the newest. */
+  olderVersions: Record<string, Pick<RiffVersion, 'text' | 'styling'>[]> = {},
+) {
   let riffs = initial.map(riff => ({ ...riff }));
   let created = 0;
   const requests: RecordedRequest[] = [];
+  const restores: { riffId: string; versionId: string }[] = [];
+
+  // Every riff has a history; the fake clock gives each version its own minute.
+  const history = new Map<string, RiffVersion[]>();
+  const addVersion = (
+    riffId: string,
+    content: Pick<RiffVersion, 'text' | 'styling'>,
+  ) => {
+    const versions = history.get(riffId) ?? [];
+    const version = versions.length + 1;
+    versions.push({
+      id: `${riffId}-v${version}`,
+      version,
+      text: content.text,
+      styling: content.styling,
+      createdAt: new Date(Date.UTC(2026, 0, 15, 12, version)).toISOString(),
+    });
+    history.set(riffId, versions);
+    return version;
+  };
+  for (const riff of riffs) {
+    for (const older of olderVersions[riff.id] ?? [])
+      addVersion(riff.id, older);
+    riff.version = addVersion(riff.id, riff);
+  }
+
   const base = `*/api/v1/projects/${project.id}`;
 
   const invalidTiming = (start: number, end: number) =>
@@ -96,6 +127,7 @@ export function fakeRiffsApi(project: ProjectDTO, initial: Riff[] = []) {
         version: 1,
       };
       riffs.push(riff);
+      addVersion(riff.id, riff);
       return HttpResponse.json({ riff }, { status: 201 });
     }),
 
@@ -117,7 +149,7 @@ export function fakeRiffsApi(project: ProjectDTO, initial: Riff[] = []) {
       const contentChanged =
         next.text !== current.text ||
         JSON.stringify(next.styling) !== JSON.stringify(current.styling);
-      if (contentChanged) next.version = current.version + 1;
+      if (contentChanged) next.version = addVersion(id, next);
 
       riffs = riffs.map(riff => (riff.id === id ? next : riff));
       return HttpResponse.json({ riff: next });
@@ -131,9 +163,48 @@ export function fakeRiffsApi(project: ProjectDTO, initial: Riff[] = []) {
     }),
   ];
 
+  handlers.push(
+    http.get('*/api/v1/riffs/:id/versions', ({ params }) => {
+      const versions = history.get(String(params.id));
+      if (!versions || !riffs.some(riff => riff.id === params.id))
+        return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+      return HttpResponse.json({ versions: [...versions].reverse() });
+    }),
+
+    http.post(
+      '*/api/v1/riffs/:id/versions/:versionId/restore',
+      ({ params }) => {
+        const riffId = String(params.id);
+        const versionId = String(params.versionId);
+        restores.push({ riffId, versionId });
+
+        const current = riffs.find(riff => riff.id === riffId);
+        const source = history
+          .get(riffId)
+          ?.find(version => version.id === versionId);
+        if (!current || !source)
+          return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+
+        // Restoring copies the old content into a brand new version.
+        const restored = {
+          ...current,
+          text: source.text,
+          styling: source.styling,
+          version: addVersion(riffId, source),
+        };
+        riffs = riffs.map(riff => (riff.id === riffId ? restored : riff));
+        return HttpResponse.json({ riff: restored }, { status: 201 });
+      },
+    ),
+  );
+
   return {
     handlers,
     requests,
+    /** Restores asked for, oldest first */
+    restores,
+    /** What the "server" holds as a riff's history, oldest first */
+    versions: (riffId: string) => history.get(riffId) ?? [],
     /** Requests of one kind, oldest first */
     sent: (method: RecordedRequest['method']) =>
       requests.filter(request => request.method === method),
