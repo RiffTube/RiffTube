@@ -70,4 +70,15 @@ describe('<RiffControls />', () => {
 
     expect(screen.getByRole('button', { name: /save riff/i })).toBeDisabled();
   });
+
+  it('locks the name and every button when disabled', () => {
+    renderControls({ isDirty: true, disabled: true });
+
+    expect(screen.getByLabelText(/name/i)).toBeDisabled();
+    expect(screen.getByRole('button', { name: /save riff/i })).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: /undo changes/i }),
+    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^delete$/i })).toBeDisabled();
+  });
 });

@@ -14,6 +14,17 @@ export interface Riff {
   version: number;
 }
 
+/** One saved state of a riff's text and styling. Titles and timing are not versioned. */
+export interface RiffVersion {
+  id: string;
+  /** 1 for the first version, counting up */
+  version: number;
+  text: string;
+  styling: RiffStyling;
+  /** ISO timestamp of when it was saved */
+  createdAt: string;
+}
+
 /** The parts of a riff that are versioned and saved explicitly. */
 export type RiffContent = Pick<Riff, 'title' | 'text' | 'styling'>;
 /** The parts of a riff that live on its placement and autosave. */

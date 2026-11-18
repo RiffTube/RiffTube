@@ -11,6 +11,8 @@ interface Props {
   /** Whether there are unsaved changes to the title, text or styling */
   isDirty: boolean;
   isSaving: boolean;
+  /** Locks the name and the buttons, e.g. while an older version is restored */
+  disabled?: boolean;
 }
 
 function RiffControls({
@@ -21,6 +23,7 @@ function RiffControls({
   onDelete,
   isDirty,
   isSaving,
+  disabled = false,
 }: Props) {
   return (
     <div className="flex flex-wrap items-end gap-4">
@@ -32,22 +35,27 @@ function RiffControls({
         onChange={event => onChange({ title: event.target.value })}
         placeholder="Riff title"
         className="w-56"
+        disabled={disabled}
       />
 
       {/* push buttons to the right */}
       <div className="flex-1" />
 
-      <Button variant="secondary" onClick={onDelete}>
+      <Button variant="secondary" disabled={disabled} onClick={onDelete}>
         Delete
       </Button>
 
-      <Button variant="secondary" disabled={!isDirty} onClick={onRevert}>
+      <Button
+        variant="secondary"
+        disabled={disabled || !isDirty}
+        onClick={onRevert}
+      >
         Undo changes
       </Button>
 
       <Button
         aria-label={isDirty ? 'Save riff' : 'No changes to save'}
-        disabled={!isDirty}
+        disabled={disabled || !isDirty}
         isLoading={isSaving}
         variant="lightMode"
         onClick={onSave}

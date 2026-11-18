@@ -22,7 +22,10 @@ function inlineStyle(styling: Riff['styling'] | undefined): CSSProperties {
 
 function RiffOverlay({ riffs, currentTime }: Props) {
   return (
-    <div className="pointer-events-none absolute bottom-10 w-full text-center">
+    <div
+      data-testid="riff-overlay"
+      className="pointer-events-none absolute bottom-10 w-full text-center"
+    >
       {riffs
         .filter(
           r =>

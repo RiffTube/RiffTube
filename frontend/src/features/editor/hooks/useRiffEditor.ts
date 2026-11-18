@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { isEqual, pickBy } from 'lodash';
 import { usePlayerController } from '@/features/player/context';
-import { riffsQueryKey } from '@/features/riffs/hooks';
+import { riffsQueryKey, riffVersionsQueryKey } from '@/features/riffs/hooks';
 import {
   createRiff,
   deleteRiff,
+  restoreRiffVersion,
   updateRiff,
 } from '@/features/riffs/services/riffsApi';
 import {
@@ -57,6 +58,9 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
   const [focusTextId, setFocusTextId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+  // Read inside stable callbacks, which would otherwise see a stale value.
+  const isRestoringRef = useRef(false);
   // Timing edits that the server has not confirmed yet, by riff id. They are
   // kept apart from the cached list so a refresh or another save's failure
   // cannot overwrite them, and shown on top of it.
@@ -119,6 +123,9 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
   /* ---------- draft: title, text, styling ---------- */
 
   const changeDraft = useCallback((changes: Partial<RiffContent>) => {
+    // A restore replaces the text and styling when it lands, so anything typed
+    // meanwhile would be lost. The fields are disabled; this is the backstop.
+    if (isRestoringRef.current) return;
     setEdits(previous => ({ ...previous, ...changes }));
   }, []);
 
@@ -131,7 +138,7 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
   );
 
   const save = useCallback(async () => {
-    if (!selected || !isDirty || isSaving) return;
+    if (!selected || !isDirty || isSaving || isRestoringRef.current) return;
 
     setIsSaving(true);
     setError(null);
@@ -145,6 +152,10 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
             : riff,
         ),
       );
+      // A text or styling save added a version to the riff's history.
+      void queryClient.invalidateQueries({
+        queryKey: riffVersionsQueryKey(saved.id),
+      });
       // Keep whatever was typed while the save was on its way.
       if (selectedIdRef.current === saved.id) {
         setEdits(previous =>
@@ -159,7 +170,56 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
     } finally {
       setIsSaving(false);
     }
-  }, [selected, isDirty, isSaving, projectId, changedContent, writeRiffs]);
+  }, [
+    selected,
+    isDirty,
+    isSaving,
+    projectId,
+    changedContent,
+    writeRiffs,
+    queryClient,
+  ]);
+
+  /**
+   * Makes an older version of the selected riff current again. Resolves to
+   * false when the user chose to keep their unsaved changes instead, and
+   * rejects when the API refuses, so the history panel can say so in place.
+   */
+  const restoreVersion = useCallback(
+    async (versionId: string): Promise<boolean> => {
+      if (!selected || isRestoring || !confirmDiscard()) return false;
+
+      setIsRestoring(true);
+      isRestoringRef.current = true;
+      try {
+        const restored = await restoreRiffVersion(selected.id, versionId);
+        // Only text and styling are versioned; the rest stays as it is here.
+        writeRiffs(current =>
+          current.map(riff =>
+            riff.id === restored.id
+              ? {
+                  ...riff,
+                  text: restored.text,
+                  styling: restored.styling,
+                  version: restored.version,
+                }
+              : riff,
+          ),
+        );
+        void queryClient.invalidateQueries({
+          queryKey: riffVersionsQueryKey(restored.id),
+        });
+        // The user agreed to drop their draft before restoring, and editing
+        // was locked while it ran, so nothing newer is being thrown away.
+        if (selectedIdRef.current === restored.id) setEdits({});
+        return true;
+      } finally {
+        isRestoringRef.current = false;
+        setIsRestoring(false);
+      }
+    },
+    [selected, isRestoring, confirmDiscard, writeRiffs, queryClient],
+  );
 
   /* ---------- timing: start and end ---------- */
 
@@ -480,6 +540,8 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
     dismissError: useCallback(() => setError(null), []),
     isAdding,
     isSaving,
+    isRestoring,
+    restoreVersion,
     isSavingTiming: timingEdits.size > 0,
     pendingDelete,
     focusTextId,

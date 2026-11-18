@@ -4,9 +4,14 @@ import { vi } from 'vitest';
 import { makeRiff } from '@/testUtils/server';
 import AnnotationForm from './AnnotationForm';
 
-function renderForm(riff = makeRiff({ text: 'Wait for it...' })) {
+function renderForm(
+  riff = makeRiff({ text: 'Wait for it...' }),
+  disabled = false,
+) {
   const onChange = vi.fn();
-  render(<AnnotationForm riff={riff} onChange={onChange} />);
+  render(
+    <AnnotationForm riff={riff} onChange={onChange} disabled={disabled} />,
+  );
   return { onChange, user: userEvent.setup() };
 }
 
@@ -60,5 +65,20 @@ describe('<AnnotationForm />', () => {
     expect(onChange).toHaveBeenNthCalledWith(2, {
       styling: { textColor: '#ffcc00', somethingElse: true, fontSize: 24 },
     });
+  });
+
+  it('locks every field when disabled', async () => {
+    const { onChange, user } = renderForm(undefined, true);
+
+    for (const label of [
+      /riff text/i,
+      /background/i,
+      /text color/i,
+      /font size/i,
+    ])
+      expect(screen.getByLabelText(label)).toBeDisabled();
+
+    await user.type(screen.getByLabelText(/riff text/i), '!');
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

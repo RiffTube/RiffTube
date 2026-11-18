@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '@/components/Button';
 import { usePlayerTime } from '@/features/player/context';
-import type { Riff } from '@/features/riffs/types';
+import type { Riff, RiffVersion } from '@/features/riffs/types';
 import type { RiffEditor } from '../../hooks/useRiffEditor';
 import { formatTime } from '../../utils/time';
 import AnnotationForm from './components/AnnotationForm';
@@ -43,6 +43,35 @@ function EditorWorkspace({ projectTitle, videoId, riffs, editor }: Props) {
   const { draft, focusTextId, clearFocusText } = editor;
   const textRef = useRef<HTMLTextAreaElement>(null);
 
+  // An older version being looked at in the history panel. It belongs to one
+  // riff, so it stops applying as soon as another riff is opened.
+  const [preview, setPreview] = useState<{
+    riffId: string;
+    version: RiffVersion;
+  } | null>(null);
+  const previewed =
+    draft && preview?.riffId === draft.id ? preview.version : null;
+
+  // Opening another riff ends the preview for good, so coming back to this
+  // one later shows its current version rather than the old one.
+  const draftId = draft?.id ?? null;
+  useEffect(() => {
+    setPreview(null);
+  }, [draftId]);
+
+  // Over the video, the previewed version stands in for the riff's own words.
+  const videoRiffs = useMemo(
+    () =>
+      previewed && draft
+        ? riffs.map(riff =>
+            riff.id === draft.id
+              ? { ...riff, text: previewed.text, styling: previewed.styling }
+              : riff,
+          )
+        : riffs,
+    [riffs, draft, previewed],
+  );
+
   // A riff that was just added is ready to be typed into.
   useEffect(() => {
     if (!focusTextId || draft?.id !== focusTextId) return;
@@ -63,7 +92,7 @@ function EditorWorkspace({ projectTitle, videoId, riffs, editor }: Props) {
       </header>
 
       <div className="mb-3">
-        <VideoCard riffs={riffs} videoId={videoId} />
+        <VideoCard riffs={videoRiffs} videoId={videoId} />
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -127,6 +156,7 @@ function EditorWorkspace({ projectTitle, videoId, riffs, editor }: Props) {
               onDelete={() => editor.remove(draft.id)}
               isDirty={editor.isDirty}
               isSaving={editor.isSaving}
+              disabled={editor.isRestoring}
             />
 
             <TimingControls
@@ -143,11 +173,22 @@ function EditorWorkspace({ projectTitle, videoId, riffs, editor }: Props) {
               riff={draft}
               onChange={editor.changeDraft}
               textRef={textRef}
+              disabled={editor.isRestoring}
             />
 
             <AudioPanel />
 
-            <RevisionPanel riff={draft} />
+            <RevisionPanel
+              // Each riff has its own history, so start the panel afresh.
+              key={draft.id}
+              riff={draft}
+              previewed={previewed}
+              onPreview={version =>
+                setPreview(version ? { riffId: draft.id, version } : null)
+              }
+              onRestore={editor.restoreVersion}
+              isRestoring={editor.isRestoring}
+            />
           </>
         )}
       </div>
