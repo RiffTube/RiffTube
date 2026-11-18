@@ -1254,26 +1254,115 @@ describe('<EditorPage /> revision history', () => {
     expect(screen.getAllByRole('radio')).toHaveLength(4);
   });
 
-  it('shows each riff its own history and drops the preview on switching', async () => {
-    player.now = 6;
+  it('shows each riff its own history, starting closed', async () => {
     const { user } = await openWithHistory();
     await openHistory(user);
-    await user.click(screen.getByRole('radio', { name: /version 2/i }));
-    expect(overVideo().getByText('Second thoughts')).toBeInTheDocument();
+    expect(screen.getAllByRole('radio')).toHaveLength(3);
 
     await user.click(sidebarRiffs()[1]);
 
-    // The other riff's panel starts closed, with only its own history
     expect(
       screen.getByRole('button', { name: /revision history/i }),
     ).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByTestId('revision-preview')).toBeNull();
     expect(await openHistory(user)).toHaveLength(1);
+  });
 
-    // Back on "wait", nothing of the old version lingers
+  it('forgets a preview when another riff is opened', async () => {
+    // Starts so early that selecting it seeks to 0:00, inside the riff, so the
+    // overlay shows whichever wording is in effect.
+    const early = makeRiff({
+      id: 'r1',
+      title: 'wait',
+      text: 'Wait for it...',
+      start: 0.2,
+      end: 4,
+    });
+    const { user } = await openEditor([early, classic], {
+      r1: [{ text: 'Second thoughts', styling: {} }],
+    });
+    await openHistory(user);
+    await user.click(screen.getByRole('radio', { name: /version 1/i }));
+    expect(overVideo().getByText('Second thoughts')).toBeInTheDocument();
+
+    await user.click(sidebarRiffs()[1]);
     await user.click(sidebarRiffs()[0]);
-    expect(nameField()).toHaveValue('wait');
-    expect(screen.queryByText('Second thoughts')).toBeNull();
+
+    // The riff's own words are back over the video...
+    expect(overVideo().getByText('Wait for it...')).toBeInTheDocument();
+    expect(overVideo().queryByText('Second thoughts')).toBeNull();
+    // ...and its history opens on the current version, with no preview
+    await openHistory(user);
+    expect(
+      screen.getByRole('radio', { name: /version 2 \(current\)/i }),
+    ).toBeChecked();
+    expect(screen.getByRole('radio', { name: /version 1/i })).not.toBeChecked();
     expect(screen.queryByTestId('revision-preview')).toBeNull();
+  });
+
+  it('locks editing while a restore is on its way, so nothing typed is lost', async () => {
+    const { api, user } = await openWithHistory();
+    const slow = gate();
+    server.use(
+      http.post('*/api/v1/riffs/r1/versions/:versionId/restore', async () => {
+        await slow.opened;
+        return HttpResponse.json(
+          {
+            riff: {
+              ...wait,
+              text: 'Second thoughts',
+              styling: { fontSize: 24 },
+              version: 4,
+            },
+          },
+          { status: 201 },
+        );
+      }),
+    );
+    await openHistory(user);
+    await user.click(screen.getByRole('radio', { name: /version 2/i }));
+
+    await user.click(
+      screen.getByRole('button', { name: /restore this version/i }),
+    );
+
+    // While it runs, nothing that the restore would overwrite can be edited
+    await waitFor(() => expect(textField()).toBeDisabled());
+    expect(nameField()).toBeDisabled();
+    expect(screen.getByLabelText(/font size/i)).toBeDisabled();
+    expect(screen.getByLabelText(/background/i)).toBeDisabled();
+    await user.type(textField(), ' typed meanwhile');
+    expect(textField()).toHaveValue('Wait for it...');
+    // ...and Cmd+S has nothing to send
+    await user.keyboard('{Meta>}s{/Meta}');
+    expect(api.sent('PATCH')).toHaveLength(0);
+
+    slow.release();
+
+    await waitFor(() => expect(textField()).toHaveValue('Second thoughts'));
+    expect(textField()).toBeEnabled();
+    expect(nameField()).toBeEnabled();
+    expect(
+      screen.getByRole('button', { name: /no changes to save/i }),
+    ).toBeDisabled();
+  });
+
+  it('unlocks editing again when a restore fails', async () => {
+    const { user } = await openWithHistory();
+    server.use(
+      http.post('*/api/v1/riffs/r1/versions/:versionId/restore', () =>
+        HttpResponse.json({ error: 'boom' }, { status: 500 }),
+      ),
+    );
+    await openHistory(user);
+    await user.click(screen.getByRole('radio', { name: /version 2/i }));
+
+    await user.click(
+      screen.getByRole('button', { name: /restore this version/i }),
+    );
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(textField()).toBeEnabled();
+    await user.type(textField(), '!');
+    expect(textField()).toHaveValue('Wait for it...!');
   });
 });

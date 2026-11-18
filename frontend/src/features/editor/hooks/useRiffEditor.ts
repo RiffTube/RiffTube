@@ -59,6 +59,8 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
   const [isAdding, setIsAdding] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+  // Read inside stable callbacks, which would otherwise see a stale value.
+  const isRestoringRef = useRef(false);
   // Timing edits that the server has not confirmed yet, by riff id. They are
   // kept apart from the cached list so a refresh or another save's failure
   // cannot overwrite them, and shown on top of it.
@@ -121,6 +123,9 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
   /* ---------- draft: title, text, styling ---------- */
 
   const changeDraft = useCallback((changes: Partial<RiffContent>) => {
+    // A restore replaces the text and styling when it lands, so anything typed
+    // meanwhile would be lost. The fields are disabled; this is the backstop.
+    if (isRestoringRef.current) return;
     setEdits(previous => ({ ...previous, ...changes }));
   }, []);
 
@@ -133,7 +138,7 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
   );
 
   const save = useCallback(async () => {
-    if (!selected || !isDirty || isSaving) return;
+    if (!selected || !isDirty || isSaving || isRestoringRef.current) return;
 
     setIsSaving(true);
     setError(null);
@@ -185,6 +190,7 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
       if (!selected || isRestoring || !confirmDiscard()) return false;
 
       setIsRestoring(true);
+      isRestoringRef.current = true;
       try {
         const restored = await restoreRiffVersion(selected.id, versionId);
         // Only text and styling are versioned; the rest stays as it is here.
@@ -203,10 +209,12 @@ export function useRiffEditor(projectId: string, fetchedRiffs: Riff[]) {
         void queryClient.invalidateQueries({
           queryKey: riffVersionsQueryKey(restored.id),
         });
-        // The user agreed to drop their draft before restoring.
+        // The user agreed to drop their draft before restoring, and editing
+        // was locked while it ran, so nothing newer is being thrown away.
         if (selectedIdRef.current === restored.id) setEdits({});
         return true;
       } finally {
+        isRestoringRef.current = false;
         setIsRestoring(false);
       }
     },

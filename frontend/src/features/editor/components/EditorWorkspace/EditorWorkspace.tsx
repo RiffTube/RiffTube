@@ -52,6 +52,13 @@ function EditorWorkspace({ projectTitle, videoId, riffs, editor }: Props) {
   const previewed =
     draft && preview?.riffId === draft.id ? preview.version : null;
 
+  // Opening another riff ends the preview for good, so coming back to this
+  // one later shows its current version rather than the old one.
+  const draftId = draft?.id ?? null;
+  useEffect(() => {
+    setPreview(null);
+  }, [draftId]);
+
   // Over the video, the previewed version stands in for the riff's own words.
   const videoRiffs = useMemo(
     () =>
@@ -149,6 +156,7 @@ function EditorWorkspace({ projectTitle, videoId, riffs, editor }: Props) {
               onDelete={() => editor.remove(draft.id)}
               isDirty={editor.isDirty}
               isSaving={editor.isSaving}
+              disabled={editor.isRestoring}
             />
 
             <TimingControls
@@ -165,6 +173,7 @@ function EditorWorkspace({ projectTitle, videoId, riffs, editor }: Props) {
               riff={draft}
               onChange={editor.changeDraft}
               textRef={textRef}
+              disabled={editor.isRestoring}
             />
 
             <AudioPanel />
