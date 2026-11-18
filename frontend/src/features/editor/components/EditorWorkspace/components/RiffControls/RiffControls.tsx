@@ -26,42 +26,43 @@ function RiffControls({
   disabled = false,
 }: Props) {
   return (
-    <div className="flex flex-wrap items-end gap-4">
-      {/* Name field */}
+    <div>
       <TextInput
         id="riff-name"
         label="Name"
         value={riff.title}
         onChange={event => onChange({ title: event.target.value })}
         placeholder="Riff title"
-        className="w-56"
+        className="w-full"
         disabled={disabled}
       />
 
-      {/* push buttons to the right */}
-      <div className="flex-1" />
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="secondary" disabled={disabled} onClick={onDelete}>
+          Delete
+        </Button>
 
-      <Button variant="secondary" disabled={disabled} onClick={onDelete}>
-        Delete
-      </Button>
+        {/* push the save buttons to the right */}
+        <div className="flex-1" />
 
-      <Button
-        variant="secondary"
-        disabled={disabled || !isDirty}
-        onClick={onRevert}
-      >
-        Undo changes
-      </Button>
+        <Button
+          variant="secondary"
+          disabled={disabled || !isDirty}
+          onClick={onRevert}
+        >
+          Undo changes
+        </Button>
 
-      <Button
-        aria-label={isDirty ? 'Save riff' : 'No changes to save'}
-        disabled={disabled || !isDirty}
-        isLoading={isSaving}
-        variant="lightMode"
-        onClick={onSave}
-      >
-        Save
-      </Button>
+        <Button
+          aria-label={isDirty ? 'Save riff' : 'No changes to save'}
+          disabled={disabled || !isDirty}
+          isLoading={isSaving}
+          variant="lightMode"
+          onClick={onSave}
+        >
+          Save
+        </Button>
+      </div>
     </div>
   );
 }
