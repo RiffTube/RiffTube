@@ -17,7 +17,7 @@ interface Props {
 const NUDGES = [-1, -0.1, 0.1, 1];
 
 const nudgeButton =
-  'h-9 min-w-11 cursor-pointer rounded-lg bg-reel-dust px-2 font-mono text-xs tabular-nums hover:bg-[#3a3a39] focus:ring-2 focus:ring-reel-dust/50 focus:outline-none';
+  'h-9 min-w-10 cursor-pointer rounded-lg bg-reel-dust px-2 font-mono text-xs tabular-nums hover:bg-[#3a3a39] focus:ring-2 focus:ring-reel-dust/50 focus:outline-none';
 const playheadButton =
   'h-9 cursor-pointer rounded-lg border border-white/20 px-3 text-xs hover:bg-white/5 focus:ring-2 focus:ring-white/20 focus:outline-none';
 
@@ -59,7 +59,7 @@ function TimingControls({
   return (
     <section aria-label="Timing" className="space-y-3">
       {rows.map(row => (
-        <div key={row.field} className="flex flex-wrap items-end gap-2">
+        <div key={row.field} className="flex flex-wrap items-end gap-1.5">
           <TimeField
             // Keyed by riff so half-typed input never carries over to another
             // riff that happens to have the same time.
@@ -84,10 +84,12 @@ function TimingControls({
 
           <button
             type="button"
+            aria-label={row.playheadLabel}
+            title={row.playheadLabel}
             onClick={row.onPlayhead}
             className={playheadButton}
           >
-            {row.playheadLabel}{' '}
+            Playhead{' '}
             <kbd className="ml-1 rounded bg-white/10 px-1 font-mono">
               {row.shortcut}
             </kbd>

@@ -159,6 +159,24 @@ describe('<EditorPage /> loading', () => {
     expect(screen.queryByLabelText(/riff text/i)).toBeNull();
   });
 
+  it('keeps the shortcut hints to one line until "?" opens them all', async () => {
+    const { user } = await openEditor([wait]);
+
+    const toggle = screen.getByRole('button', { name: /show all shortcuts/i });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+    await user.click(toggle);
+
+    expect(
+      screen.getByRole('button', { name: /hide shortcuts/i }),
+    ).toHaveAttribute('aria-expanded', 'true');
+    expect(
+      within(screen.getByRole('list', { name: /keyboard shortcuts/i }))
+        .getAllByRole('listitem')
+        .map(item => item.textContent),
+    ).toContain('⌘S save');
+  });
+
   it('copes with riffs that have no title or styling yet', async () => {
     server.use(
       http.get('*/api/v1/projects/p1', () => HttpResponse.json({ project })),

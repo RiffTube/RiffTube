@@ -39,6 +39,46 @@ const SHORTCUTS = [
   ['Esc', 'undo changes'],
 ];
 
+/**
+ * One line of key hints under the video. Whatever doesn't fit is cut off;
+ * the "?" button opens the whole list.
+ */
+function ShortcutHints() {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="flex min-w-0 flex-1 items-start gap-2">
+      <ul
+        id="editor-shortcuts"
+        aria-label="Keyboard shortcuts"
+        className={`flex min-w-0 flex-1 gap-x-3 gap-y-1 text-xs text-white/50 ${
+          isOpen
+            ? 'flex-wrap'
+            : 'overflow-hidden [mask-image:linear-gradient(to_right,black_85%,transparent)] whitespace-nowrap'
+        }`}
+      >
+        {SHORTCUTS.map(([keys, action]) => (
+          <li key={keys} className="shrink-0">
+            <kbd className="rounded bg-white/10 px-1 font-mono text-white/70">
+              {keys}
+            </kbd>{' '}
+            {action}
+          </li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls="editor-shortcuts"
+        aria-label={isOpen ? 'Hide shortcuts' : 'Show all shortcuts'}
+        onClick={() => setIsOpen(open => !open)}
+        className="h-5 w-5 shrink-0 cursor-pointer rounded-full border border-white/30 text-xs leading-none text-white/70 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:outline-none"
+      >
+        ?
+      </button>
+    </div>
+  );
+}
+
 function EditorWorkspace({ projectTitle, videoId, riffs, editor }: Props) {
   const { draft, focusTextId, clearFocusText } = editor;
   const textRef = useRef<HTMLTextAreaElement>(null);
@@ -80,60 +120,52 @@ function EditorWorkspace({ projectTitle, videoId, riffs, editor }: Props) {
   }, [focusTextId, draft?.id, clearFocusText]);
 
   return (
-    <main className="flex min-w-0 flex-1 flex-col p-6">
-      <header className="mb-4 flex min-w-0 items-center gap-3">
-        <Link
-          to="/dashboard"
-          className="shrink-0 text-sm text-white/60 hover:text-white"
-        >
-          ← Dashboard
-        </Link>
-        <h1 className="truncate text-lg font-semibold">{projectTitle}</h1>
-      </header>
-
-      <div className="mb-3">
-        <VideoCard riffs={videoRiffs} videoId={videoId} />
-      </div>
-
-      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <Button
-          size="sm"
-          isLoading={editor.isAdding}
-          onClick={() => void editor.addAtPlayhead()}
-        >
-          + Riff
-        </Button>
-        <Playhead />
-        <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-white/50">
-          {SHORTCUTS.map(([keys, action]) => (
-            <li key={keys}>
-              <kbd className="rounded bg-white/10 px-1 font-mono text-white/70">
-                {keys}
-              </kbd>{' '}
-              {action}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {editor.error && (
-        <div
-          role="alert"
-          className="mb-4 flex items-start justify-between gap-3 rounded-lg border border-red-400/40 bg-red-500/10 px-3 py-2 text-sm text-red-100"
-        >
-          <span>{editor.error}</span>
-          <button
-            type="button"
-            onClick={editor.dismissError}
-            className="cursor-pointer underline hover:text-white"
+    <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 p-6 lg:flex-row lg:gap-6">
+      {/* Video column: never scrolls, the video shrinks to fit it. */}
+      <div className="flex min-w-0 flex-col gap-3 lg:min-h-0 lg:flex-1">
+        <header className="flex min-w-0 items-center gap-3">
+          <Link
+            to="/dashboard"
+            className="shrink-0 text-sm text-white/60 hover:text-white"
           >
-            Dismiss
-          </button>
-        </div>
-      )}
+            ← Dashboard
+          </Link>
+          <h1 className="truncate text-lg font-semibold">{projectTitle}</h1>
+        </header>
 
-      {/* Editor panels (scrollable) */}
-      <div className="min-w-0 flex-1 space-y-8 overflow-x-hidden overflow-y-auto pr-2 md:pr-4">
+        <VideoCard riffs={videoRiffs} videoId={videoId} />
+
+        <div className="flex min-w-0 items-center gap-x-4 gap-y-2">
+          <Button
+            size="sm"
+            isLoading={editor.isAdding}
+            onClick={() => void editor.addAtPlayhead()}
+          >
+            + Riff
+          </Button>
+          <Playhead />
+          <ShortcutHints />
+        </div>
+      </div>
+
+      {/* Editor panels: scroll on their own beside (or under) the video. */}
+      <div className="min-h-0 min-w-0 flex-1 space-y-6 overflow-x-hidden overflow-y-auto pr-2 lg:w-[27rem] lg:flex-none 2xl:w-[29rem]">
+        {editor.error && (
+          <div
+            role="alert"
+            className="flex items-start justify-between gap-3 rounded-lg border border-red-400/40 bg-red-500/10 px-3 py-2 text-sm text-red-100"
+          >
+            <span>{editor.error}</span>
+            <button
+              type="button"
+              onClick={editor.dismissError}
+              className="cursor-pointer underline hover:text-white"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {riffs.length === 0 && (
           <p className="text-sm text-white/60">
             This project has no riffs yet. Play the video and press{' '}
