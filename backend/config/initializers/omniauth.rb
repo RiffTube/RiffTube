@@ -22,7 +22,7 @@ end
 
 OmniAuth.config.logger = Rails.logger
 if Rails.env.development? || Rails.env.test?
-  OmniAuth.config.allowed_request_methods = %i[get]
+  OmniAuth.config.allowed_request_methods = %i[get post]
   OmniAuth.config.silence_get_warning = true
 else
   OmniAuth.config.allowed_request_methods = %i[post]

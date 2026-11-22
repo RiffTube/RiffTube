@@ -14,6 +14,12 @@ module Api
         redirect_to path, only_path: true
       end
 
+      # Token the frontend must POST to /auth/google_oauth2 (OmniAuth checks it
+      # against session[:csrf] before starting the OAuth flow).
+      def csrf
+        render json: { token: Rack::Protection::AuthenticityToken.token(session) }
+      end
+
       def google_oauth2_callback
         user = find_or_init_user
         return log_in_and_redirect(user) if user.persisted?

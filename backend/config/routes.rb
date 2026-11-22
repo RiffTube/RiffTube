@@ -26,6 +26,7 @@ Rails.application.routes.draw do
       post 'riffs/:riff_id/versions/:id/restore', to: 'riff_versions#restore', as: :restore_riff_version
 
       # ─── OAUTH ───────────────────────────────────────────
+      get 'auth/csrf',                   to: 'sessions#csrf'
       get 'auth/google_oauth2',          to: 'sessions#google_oauth2_redirect'
       get 'auth/google_oauth2/callback', to: 'sessions#google_oauth2_callback'
       get 'auth/failure',                to: 'sessions#failure' # namespaced failure
@@ -44,6 +45,16 @@ Rails.application.routes.draw do
     end
   end
 
-  # also catch OmniAuth's default /auth/failure (non-namespaced)
-  get '/auth/failure', to: 'api/v1/sessions#failure'
+  # OmniAuth failures are routed to /api/v1/auth/failure (see initializers/omniauth.rb).
+  # /auth/failure itself is a frontend route, served by the SPA fallback below.
+
+  # Health check for the hosting platform
+  get '/up', to: proc { [200, { 'Content-Type' => 'text/plain' }, ['ok']] }
+
+  # In production the built frontend lives in public/. Any non-API HTML request
+  # that isn't a static file gets index.html so client-side routes work on reload.
+  get '*path', to: 'spa#index', constraints: lambda { |req|
+    !req.path.start_with?('/api') && req.format.html?
+  }
+  root 'spa#index'
 end
