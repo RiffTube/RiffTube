@@ -44,6 +44,10 @@ RUN ruby -e 'require "bundler/setup"; require "logger"; \
 COPY backend/ ./
 COPY --from=frontend /app/frontend/dist/ ./public/
 
+# .dockerignore drops tmp/, log/ and storage/ contents (including .keep files),
+# so recreate the directories Puma and Rails write to at runtime.
+RUN mkdir -p tmp/pids tmp/cache log storage
+
 RUN bundle exec bootsnap precompile app/ lib/ || true
 
 EXPOSE 3000
