@@ -68,7 +68,51 @@ module OmniAuth
       assert_equal 'signup=true', uri.query
     end
 
+    test 'csrf endpoint returns a token' do
+      get '/api/v1/auth/csrf'
+      assert_response :success
+      assert JSON.parse(response.body)['token'].present?
+    end
+
+    test 'POST with a valid CSRF token starts the Google flow' do
+      with_production_request_phase do
+        get '/api/v1/auth/csrf'
+        token = JSON.parse(response.body)['token']
+
+        post '/auth/google_oauth2', params: { authenticity_token: token }
+        assert_response :redirect
+        assert_match %r{\Ahttps://accounts\.google\.com/}, response.location
+      end
+    end
+
+    test 'POST without a CSRF token is rejected' do
+      with_production_request_phase do
+        post '/auth/google_oauth2'
+        assert_response :redirect
+        assert_no_match(/accounts\.google\.com/, response.location)
+        assert_match %r{/auth/failure\?message=authenticity_error}, response.location
+      end
+    end
+
     private
+
+    # Exercise the real request phase (no test-mode mocking), POST-only as in production.
+    FAILURE_REDIRECT = proc do |env|
+      msg = Rack::Utils.escape(env['omniauth.error.type'].to_s)
+      Rack::Response.new([], 302, 'Location' => "/api/v1/auth/failure?message=#{msg}").finish
+    end
+
+    def with_production_request_phase
+      config = OmniAuth.config
+      saved = [config.allowed_request_methods, config.on_failure]
+      config.test_mode = false
+      config.allowed_request_methods = %i[post]
+      config.on_failure = FAILURE_REDIRECT
+      yield
+    ensure
+      config.test_mode = true
+      config.allowed_request_methods, config.on_failure = saved
+    end
 
     def verify_user_response(user)
       payload = JSON.parse(response.body)

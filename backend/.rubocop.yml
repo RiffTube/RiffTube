@@ -1,3 +1,7 @@
 plugins:
   - rubocop-rails
   - rubocop-factory_bot
+
+Metrics/BlockLength:
+  Exclude:
+    - config/routes.rb

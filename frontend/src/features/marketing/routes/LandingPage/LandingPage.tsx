@@ -36,13 +36,13 @@ function LandingPage() {
         isOpen={isSignUpOpen}
         onClose={closeSignUp}
         onSwitchToSignIn={switchToSignIn}
-        onGoogle={() => launchGoogleOAuth('signup')}
+        onGoogle={() => void launchGoogleOAuth('signup')}
       />
       <SignInModal
         isOpen={isSignInOpen}
         onClose={closeSignIn}
         onSwitchToSignUp={switchToSignUp}
-        onGoogle={() => launchGoogleOAuth('signin')}
+        onGoogle={() => void launchGoogleOAuth('signin')}
       />
     </Layout>
   );

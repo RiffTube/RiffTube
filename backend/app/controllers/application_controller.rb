@@ -65,9 +65,14 @@ class ApplicationController < ActionController::API
     raise 'FRONTEND_URL must use http or https'
   end
 
+  # Railway sets RAILWAY_PUBLIC_DOMAIN to the service's generated domain.
+  def allowed_frontend_hosts
+    [*ALLOWED_FRONTEND_HOSTS, ENV.fetch('RAILWAY_PUBLIC_DOMAIN', nil)].compact
+  end
+
   def validate_host!(uri)
     return unless Rails.env.production? # only lock down in prod
-    return if ALLOWED_FRONTEND_HOSTS.include?(uri.host)
+    return if allowed_frontend_hosts.include?(uri.host)
 
     Rails.logger.error "Unsafe FRONTEND_URL host: #{uri.host.inspect}"
     raise ActionController::RoutingError, 'Invalid request'
