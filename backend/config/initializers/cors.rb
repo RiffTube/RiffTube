@@ -40,20 +40,23 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
 end
 
 if Rails.env.production?
+  # Checked first: when unset, the localhost default would otherwise trip the
+  # "local/private origins" check below with a misleading message.
+  if ENV['FRONTEND_ORIGINS'].to_s.strip.empty?
+    raise 'CORS misconfiguration: FRONTEND_ORIGINS is not set in production ' \
+          '(set it to your site origin, e.g. https://example.up.railway.app)'
+  end
+
   raise 'CORS misconfiguration: empty allow-list' if ALLOWED_ORIGINS.empty?
 
   # Block localhost/loopback/private ranges in prod
-  if ALLOWED_ORIGINS.any? { |o| o.match?(LOCAL_OR_PRIVATE_ORIGIN_REGEX) }
-    raise 'CORS misconfiguration: remove local/private origins from FRONTEND_ORIGINS in production'
+  local = ALLOWED_ORIGINS.select { |o| o.match?(LOCAL_OR_PRIVATE_ORIGIN_REGEX) }
+  if local.any?
+    raise 'CORS misconfiguration: remove local/private origins from FRONTEND_ORIGINS ' \
+          "in production: #{local.join(', ')}"
   end
 
   # Require HTTPS in prod
-  if ALLOWED_ORIGINS.any? { |o| o.start_with?('http://') }
-    raise 'CORS misconfiguration: use HTTPS origins in production'
-  end
-
-  # Prevent shipping with only the dev default
-  if ALLOWED_ORIGINS == [DEFAULT_DEV_ORIGIN]
-    raise 'CORS misconfiguration: FRONTEND_ORIGINS is still localhost-only in production'
-  end
+  insecure = ALLOWED_ORIGINS.select { |o| o.start_with?('http://') }
+  raise "CORS misconfiguration: use HTTPS origins in production: #{insecure.join(', ')}" if insecure.any?
 end
