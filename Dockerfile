@@ -28,7 +28,10 @@ ENV RAILS_ENV=production \
     RAILS_LOG_TO_STDOUT=1
 
 COPY backend/Gemfile backend/Gemfile.lock ./
-RUN bundle install && rm -rf ~/.bundle "${BUNDLE_PATH}"/ruby/*/cache
+# Ruby 3.2's bundled Bundler (2.4) pre-activates the default `logger` gem and
+# crashes when the lockfile wants a newer one; use the locked Bundler instead.
+RUN gem install bundler -v "$(tail -1 Gemfile.lock | tr -d ' ')" --no-document && \
+    bundle install && rm -rf ~/.bundle "${BUNDLE_PATH}"/ruby/*/cache
 
 COPY backend/ ./
 COPY --from=frontend /app/frontend/dist/ ./public/
