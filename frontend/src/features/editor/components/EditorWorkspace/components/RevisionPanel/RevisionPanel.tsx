@@ -68,7 +68,7 @@ function RevisionPanel({
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(current => !current)}
-        className="flex cursor-pointer items-center gap-2 rounded py-2 font-medium select-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:outline-none"
+        className="flex min-h-10 cursor-pointer items-center gap-2 rounded-[6px] py-2 font-medium text-paper select-none"
       >
         <span aria-hidden="true">{open ? '▾' : '▸'}</span>
         Revision history
@@ -77,7 +77,7 @@ function RevisionPanel({
       {open && (
         <div id={panelId} className="mt-2 space-y-3 pl-2">
           {versions.isPending && (
-            <p role="status" className="text-white/60">
+            <p role="status" className="text-muted-dark">
               Loading history…
             </p>
           )}
@@ -105,22 +105,22 @@ function RevisionPanel({
                     : isCurrent;
                   return (
                     <li key={version.id}>
-                      <label className="flex cursor-pointer items-baseline gap-2 rounded px-1 py-1 hover:bg-white/5">
+                      <label className="flex cursor-pointer items-baseline gap-2 rounded-[6px] px-1 py-1 hover:bg-white/5">
                         <input
                           type="radio"
                           name={`revision-${riff.id}`}
                           checked={isChosen}
                           onChange={() => choose(version)}
-                          className="accent-blue-500"
+                          className="accent-gold"
                         />
                         <span className="shrink-0 font-medium">
                           Version {version.version}
                           {isCurrent && ' (current)'}
                         </span>
-                        <span className="shrink-0 text-xs text-white/50">
+                        <span className="shrink-0 text-xs text-muted-dark tabular-nums">
                           {savedAt(version.createdAt)}
                         </span>
-                        <span className="truncate text-white/70">
+                        <span className="truncate text-muted-dark">
                           {version.text.trim() || 'No text'}
                         </span>
                       </label>
@@ -130,8 +130,8 @@ function RevisionPanel({
               </ul>
 
               {previewed && (
-                <div className="space-y-2 rounded-lg border border-white/10 p-3">
-                  <p className="text-xs text-white/60">
+                <div className="space-y-2 rounded-[8px] border border-rule-dark bg-ink p-3">
+                  <p className="text-xs text-muted-dark">
                     Version {previewed.version} looked like this:
                   </p>
                   <p
@@ -166,7 +166,7 @@ function RevisionPanel({
                 </p>
               )}
 
-              <p className="text-xs text-white/50">
+              <p className="text-xs text-muted-dark">
                 Restoring brings back a version’s text and styling as a new
                 version. The riff’s name and timing stay as they are.
               </p>

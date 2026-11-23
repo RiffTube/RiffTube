@@ -4,6 +4,7 @@ import {
   type Riff,
   type RiffContent,
 } from '@/features/riffs/types';
+import { fieldControl, fieldLabel } from '../../../../styles/fields';
 
 interface Props {
   /** The riff being edited, unsaved changes included */
@@ -24,9 +25,9 @@ function AnnotationForm({ riff, onChange, textRef, disabled = false }: Props) {
     onChange({ styling: { ...riff.styling, ...changes } });
 
   return (
-    <section className="space-y-4 rounded-lg bg-transparent">
+    <section className="space-y-4">
       <div>
-        <label htmlFor="riff-text" className="mb-1 block font-medium">
+        <label htmlFor="riff-text" className={fieldLabel}>
           Riff text
         </label>
         <textarea
@@ -37,12 +38,12 @@ function AnnotationForm({ riff, onChange, textRef, disabled = false }: Props) {
           disabled={disabled}
           onChange={event => onChange({ text: event.target.value })}
           placeholder="Type riff text that will appear over the video…"
-          className="w-full max-w-full resize-none rounded-lg border-2 border-smoke bg-transparent p-2 text-sm focus:border-white focus:outline-none disabled:opacity-60 xl:text-base"
+          className={`block w-full max-w-full resize-none px-3 py-2 text-base leading-relaxed ${fieldControl}`}
         />
       </div>
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap items-end gap-5">
         <div>
-          <label htmlFor="riff-bg-color" className="mb-1 block text-xs">
+          <label htmlFor="riff-bg-color" className={fieldLabel}>
             Background
           </label>
           <input
@@ -51,11 +52,11 @@ function AnnotationForm({ riff, onChange, textRef, disabled = false }: Props) {
             value={style.bgColor}
             disabled={disabled}
             onChange={event => changeStyle({ bgColor: event.target.value })}
-            className="h-8 w-12 border-0 p-0"
+            className="h-10 w-14 cursor-pointer rounded-[6px] border border-smoke bg-ink p-1 disabled:cursor-not-allowed disabled:opacity-60"
           />
         </div>
         <div>
-          <label htmlFor="riff-text-color" className="mb-1 block text-xs">
+          <label htmlFor="riff-text-color" className={fieldLabel}>
             Text color
           </label>
           <input
@@ -64,11 +65,11 @@ function AnnotationForm({ riff, onChange, textRef, disabled = false }: Props) {
             value={style.textColor}
             disabled={disabled}
             onChange={event => changeStyle({ textColor: event.target.value })}
-            className="h-8 w-12 border-0 p-0"
+            className="h-10 w-14 cursor-pointer rounded-[6px] border border-smoke bg-ink p-1 disabled:cursor-not-allowed disabled:opacity-60"
           />
         </div>
         <div>
-          <label htmlFor="riff-font-size" className="mb-1 block text-xs">
+          <label htmlFor="riff-font-size" className={fieldLabel}>
             Font size
           </label>
           <select
@@ -78,7 +79,7 @@ function AnnotationForm({ riff, onChange, textRef, disabled = false }: Props) {
             onChange={event =>
               changeStyle({ fontSize: Number(event.target.value) })
             }
-            className="rounded bg-gray-900 p-2"
+            className={`h-10 cursor-pointer pr-2 pl-3 text-sm tabular-nums ${fieldControl}`}
           >
             {FONT_SIZES.map(size => (
               <option key={size} value={size}>

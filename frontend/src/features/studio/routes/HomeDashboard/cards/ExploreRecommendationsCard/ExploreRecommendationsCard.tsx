@@ -6,12 +6,12 @@ export default function ExploreRecommendationsCard({
   items: ExploreRecommendation[] | null;
 }) {
   return (
-    <section className="rounded-xl border border-white/10 bg-white/5 p-4 sm:rounded-2xl sm:p-5">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-lg font-semibold sm:text-base">Explore</h3>
+    <section className="rounded-[8px] border border-rule-dark bg-charcoal p-5 sm:p-6">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h2 className="text-lg font-semibold text-paper">Explore</h2>
         <a
           href="/explore"
-          className="rounded-full border border-white/10 px-3 py-1 text-xs hover:bg-white/5"
+          className="inline-flex h-9 items-center rounded-[6px] px-2 text-sm font-medium text-muted-dark transition-colors hover:bg-white/5 hover:text-paper"
         >
           See all
         </a>
@@ -22,17 +22,17 @@ export default function ExploreRecommendationsCard({
       ) : items.length === 0 ? (
         <EmptyState />
       ) : (
-        <ul className="space-y-2">
+        <ul className="-mx-2 space-y-1">
           {items.map(r => (
             <li key={r.id}>
               <a
                 href={`/explore?rec=${r.id}`}
-                className="group grid grid-cols-[112px_1fr] items-center gap-3 rounded-lg px-2 py-2 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none sm:grid-cols-[96px_1fr]"
+                className="group grid grid-cols-[112px_1fr] items-center gap-4 rounded-[6px] p-2 transition-colors hover:bg-white/5 md:grid-cols-[96px_1fr] md:gap-3 lg:grid-cols-[112px_1fr] lg:gap-4"
                 aria-label={`${r.title} by ${r.author}`}
                 title={r.title}
               >
                 {/* thumb */}
-                <div className="relative aspect-video w-28 overflow-hidden rounded-lg bg-white/10 sm:w-24">
+                <div className="relative aspect-video w-28 overflow-hidden rounded-[8px] bg-surface-3 md:w-24 lg:w-28">
                   {r.thumbnailUrl ? (
                     <img
                       src={r.thumbnailUrl}
@@ -48,10 +48,10 @@ export default function ExploreRecommendationsCard({
 
                 {/* text */}
                 <div className="min-w-0">
-                  <p className="line-clamp-2 text-base leading-snug font-medium sm:text-sm">
+                  <p className="line-clamp-2 text-base leading-snug font-semibold text-paper">
                     {r.title}
                   </p>
-                  <p className="mt-0.5 text-xs leading-snug text-white/60">
+                  <p className="mt-1 text-sm leading-snug text-muted-dark">
                     by {r.author}
                   </p>
                 </div>
@@ -66,28 +66,31 @@ export default function ExploreRecommendationsCard({
 
 function EmptyState() {
   return (
-    <div className="rounded-lg border border-white/10 p-3 text-sm text-white/70">
+    <p className="text-base text-muted-dark">
       Nothing to recommend yet.{' '}
-      <a href="/explore" className="underline hover:text-white">
+      <a
+        href="/explore"
+        className="rounded-[2px] font-medium text-paper underline underline-offset-4 hover:text-gold"
+      >
         Browse Explore
       </a>
       .
-    </div>
+    </p>
   );
 }
 
 function SkeletonList() {
   return (
-    <ul className="space-y-2">
+    <ul className="-mx-2 space-y-1">
       {Array.from({ length: 3 }).map((_, i) => (
         <li
           key={i}
-          className="grid grid-cols-[112px_1fr] items-center gap-3 rounded-lg px-2 py-2 sm:grid-cols-[96px_1fr]"
+          className="grid grid-cols-[112px_1fr] items-center gap-4 p-2 md:grid-cols-[96px_1fr] md:gap-3 lg:grid-cols-[112px_1fr] lg:gap-4"
         >
-          <div className="relative aspect-video w-28 animate-pulse overflow-hidden rounded-lg bg-white/10 sm:w-24" />
+          <div className="relative aspect-video w-28 animate-pulse overflow-hidden rounded-[8px] bg-surface-3 md:w-24 lg:w-28" />
           <div className="space-y-2">
-            <div className="h-3 w-56 animate-pulse rounded bg-white/10 sm:w-48" />
-            <div className="h-3 w-32 animate-pulse rounded bg-white/10 sm:w-28" />
+            <div className="h-3 w-40 max-w-full animate-pulse rounded bg-surface-3" />
+            <div className="h-3 w-24 animate-pulse rounded bg-surface-3" />
           </div>
         </li>
       ))}

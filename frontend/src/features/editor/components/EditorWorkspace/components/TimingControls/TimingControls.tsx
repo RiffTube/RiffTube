@@ -16,10 +16,21 @@ interface Props {
 
 const NUDGES = [-1, -0.1, 0.1, 1];
 
+/*
+ * Start, End and Duration share one column template, so the time values,
+ * each nudge button and the playhead actions line up from row to row.
+ * On narrow screens the playhead action drops to its own line.
+ */
+const row =
+  'grid grid-cols-[6.5rem_repeat(4,minmax(2.25rem,1fr))] items-end gap-1.5 ' +
+  'sm:grid-cols-[6.5rem_repeat(4,minmax(2.25rem,1fr))_6.75rem]';
+
 const nudgeButton =
-  'h-9 min-w-10 cursor-pointer rounded-lg bg-reel-dust px-2 font-mono text-xs tabular-nums hover:bg-[#3a3a39] focus:ring-2 focus:ring-reel-dust/50 focus:outline-none';
+  'h-10 cursor-pointer rounded-[6px] border border-strong-outline bg-surface-3 px-1 font-mono text-xs text-paper tabular-nums ' +
+  'transition-colors hover:border-smoke hover:bg-[#363236]';
 const playheadButton =
-  'h-9 cursor-pointer rounded-lg border border-white/20 px-3 text-xs hover:bg-white/5 focus:ring-2 focus:ring-white/20 focus:outline-none';
+  'col-span-full inline-flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border border-strong-outline px-2 text-xs text-paper ' +
+  'transition-colors hover:border-smoke hover:bg-white/5 sm:col-span-1';
 
 function nudgeLabel(edge: string, delta: number): string {
   const direction = delta < 0 ? 'earlier' : 'later';
@@ -58,24 +69,24 @@ function TimingControls({
 
   return (
     <section aria-label="Timing" className="space-y-3">
-      {rows.map(row => (
-        <div key={row.field} className="flex flex-wrap items-end gap-1.5">
+      {rows.map(row_ => (
+        <div key={row_.field} className={row}>
           <TimeField
             // Keyed by riff so half-typed input never carries over to another
             // riff that happens to have the same time.
             key={riff.id}
-            id={`riff-${row.field}`}
-            label={row.label}
-            value={row.value}
-            onCommit={seconds => onChange({ [row.field]: seconds })}
+            id={`riff-${row_.field}`}
+            label={row_.label}
+            value={row_.value}
+            onCommit={seconds => onChange({ [row_.field]: seconds })}
           />
 
           {NUDGES.map(delta => (
             <button
               key={delta}
               type="button"
-              aria-label={nudgeLabel(row.field, delta)}
-              onClick={() => onNudge(row.field, delta)}
+              aria-label={nudgeLabel(row_.field, delta)}
+              onClick={() => onNudge(row_.field, delta)}
               className={nudgeButton}
             >
               {delta > 0 ? `+${delta}` : `−${Math.abs(delta)}`}
@@ -84,23 +95,23 @@ function TimingControls({
 
           <button
             type="button"
-            aria-label={row.playheadLabel}
-            title={row.playheadLabel}
-            onClick={row.onPlayhead}
+            aria-label={row_.playheadLabel}
+            title={row_.playheadLabel}
+            onClick={row_.onPlayhead}
             className={playheadButton}
           >
             Playhead{' '}
-            <kbd className="ml-1 rounded bg-white/10 px-1 font-mono">
-              {row.shortcut}
+            <kbd className="rounded-[3px] bg-white/10 px-1 font-mono text-muted-dark">
+              {row_.shortcut}
             </kbd>
           </button>
         </div>
       ))}
 
-      <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/70">
-        <span>
+      <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-t border-rule-dark pt-3 text-sm text-muted-dark">
+        <span className="w-[6.5rem]">
           Duration{' '}
-          <span className="font-mono text-white tabular-nums">
+          <span className="font-mono text-paper tabular-nums">
             {riffDuration(riff).toFixed(1)}s
           </span>
         </span>

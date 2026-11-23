@@ -1,49 +1,64 @@
-import MicIcon from '@/assets/microphone.svg?react';
+import { Mic, Share2 } from 'lucide-react';
 import TvIcon from '@/assets/rifftube-logo.svg?react';
-import ShareIcon from '@/assets/share-icon.svg?react';
 import Card from '../Card';
 
+/*
+ * The step icons share one optical weight: the mic and share glyphs are drawn
+ * with strokes that match the frame of the RiffTube TV beside them.
+ */
+const StepTvIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <TvIcon fill="currentColor" stroke="none" {...props} />
+);
+const StepMicIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <Mic strokeWidth={2.4} {...props} />
+);
+const StepShareIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <Share2 strokeWidth={2.4} {...props} />
+);
+
+const steps = [
+  {
+    number: 1,
+    title: 'Pick Your Video',
+    Icon: StepTvIcon,
+    description: 'Find any YouTube video that deserves your genius',
+  },
+  {
+    number: 2,
+    title: 'Add Your Riffs',
+    Icon: StepMicIcon,
+    description: 'Record your voice or add subtitles',
+  },
+  {
+    number: 3,
+    title: 'Share the Fun',
+    Icon: StepShareIcon,
+    description:
+      'Send your riffed creation to friends—or broadcast it to the world.',
+  },
+];
+
 function HowItWorksSection() {
-  const steps = [
-    {
-      number: 1,
-      title: 'Pick Your Video',
-      Icon: TvIcon,
-      description: 'Find any YouTube video that deserves your genius',
-    },
-    {
-      number: 2,
-      title: 'Add Your Riffs',
-      Icon: MicIcon,
-      description: 'Record your voice or add subtitles',
-    },
-    {
-      number: 3,
-      title: 'Share the Fun',
-      Icon: ShareIcon,
-      description:
-        'Send your riffed creation to friends—or broadcast it to the world.',
-    },
-  ];
-
   return (
-    <section className="bg-popcorn-butter py-16 text-black">
-      <div className="container mx-auto max-w-screen-2xl px-4 py-4">
-        <h2 className="mb-12 text-center font-['Limelight',cursive] text-4xl font-bold md:text-6xl">
-          How It Works
-        </h2>
+    <section className="surface-paper bg-paper text-ink">
+      <div className="page-grid pb-16 sm:pb-20">
+        <div className="border-t border-ink pt-10 sm:pt-12">
+          <h2 className="font-serif text-[32px] leading-tight md:text-[38px]">
+            How It Works
+          </h2>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {steps.map(step => (
-            <Card
-              key={step.number}
-              number={step.number}
-              title={step.title}
-              Icon={step.Icon}
-            >
-              {step.description}
-            </Card>
-          ))}
+          <ol className="mt-8 grid grid-cols-1 border-y border-rule-light md:grid-cols-3">
+            {steps.map(step => (
+              <li
+                key={step.number}
+                className="border-rule-light py-6 not-first:border-t md:px-6 md:py-7 md:not-first:border-t-0 md:not-first:border-l md:first:pl-0 md:last:pr-0"
+              >
+                <Card number={step.number} title={step.title} Icon={step.Icon}>
+                  {step.description}
+                </Card>
+              </li>
+            ))}
+          </ol>
         </div>
       </div>
     </section>

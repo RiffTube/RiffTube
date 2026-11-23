@@ -5,17 +5,22 @@ export interface CardProps {
   children: React.ReactNode;
 }
 
+/** One step in the "How It Works" listing: a column of the printed guide. */
 function Card({ number, title, Icon, children }: CardProps) {
   return (
-    <div className="flex min-w-0 flex-col items-center rounded-lg border-4 border-backstage bg-flicker-white p-6 text-center">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-full bg-backstage font-semibold text-white">
+    <div className="min-w-0">
+      <div className="flex h-11 items-center justify-between">
+        <span className="font-serif text-[34px] leading-none text-burgundy">
           {number}
-        </div>
-        <h3 className="text-xl font-bold">{title}</h3>
+        </span>
+        <span className="grid h-11 w-11 place-items-center">
+          <Icon aria-hidden="true" className="h-9 w-auto text-ink" />
+        </span>
       </div>
-      <Icon aria-hidden="true" className="mb-4 h-12 w-12" />
-      <p className="text-base">{children}</p>
+      <h3 className="mt-5 text-[21px] leading-7 font-bold">{title}</h3>
+      <p className="mt-2 max-w-[34ch] text-[17px] leading-relaxed text-muted-light">
+        {children}
+      </p>
     </div>
   );
 }

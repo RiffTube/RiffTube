@@ -48,7 +48,7 @@ function AuthModal({
           </OAuthButton>
         </div>
         {error && (
-          <p className="mb-4 text-sm text-red-500" role="alert">
+          <p className="mb-4 text-sm text-red-300" role="alert">
             {error}
           </p>
         )}

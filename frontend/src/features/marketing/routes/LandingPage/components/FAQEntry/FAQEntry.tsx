@@ -10,6 +10,8 @@ type FAQItem = {
   answer: string;
 };
 
+const answerText = 'max-w-[64ch] text-[17px] leading-relaxed text-muted-dark';
+
 function FAQEntry({
   question,
   answer,
@@ -17,26 +19,23 @@ function FAQEntry({
 }: FAQItem & { isAccordion: boolean }) {
   if (isAccordion) {
     return (
-      <Disclosure as="div">
+      <Disclosure as="div" className="border-b border-rule-dark">
         {({ open }) => (
           <>
             <dt>
               <DisclosureButton
                 as="button"
-                className="flex w-full items-center justify-between rounded-lg bg-vintage-teal-dark p-6 text-left"
+                className="flex min-h-11 w-full cursor-pointer items-center justify-between gap-4 rounded-[6px] py-5 text-left"
                 aria-label={`Toggle answer for: ${question}`}
               >
                 <span className="text-lg font-semibold">{question}</span>
                 <ChevronDown
                   aria-hidden
-                  className={`h-5 w-5 transition-transform ${open ? 'rotate-180' : ''}`}
+                  className={`h-5 w-5 shrink-0 text-muted-dark transition-transform ${open ? 'rotate-180' : ''}`}
                 />
               </DisclosureButton>
             </dt>
-            <DisclosurePanel
-              as="dd"
-              className="mt-2 px-6 pb-4 text-base leading-relaxed text-gray-200"
-            >
+            <DisclosurePanel as="dd" className={`-mt-1 pb-5 ${answerText}`}>
               {answer}
             </DisclosurePanel>
           </>
@@ -46,9 +45,9 @@ function FAQEntry({
   }
 
   return (
-    <div>
+    <div className="border-b border-rule-dark py-6">
       <dt className="text-lg font-semibold">{question}</dt>
-      <dd className="mt-2 text-base leading-relaxed text-gray-200">{answer}</dd>
+      <dd className={`mt-2 ${answerText}`}>{answer}</dd>
     </div>
   );
 }

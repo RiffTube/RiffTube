@@ -16,3 +16,33 @@ describe('<StudioSidebar />', () => {
     );
   });
 });
+
+describe('<StudioSidebar /> on the dashboard', () => {
+  it('marks only Home as the current page', () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <StudioSidebar />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(
+      screen.getByRole('link', { name: 'My Projects' }),
+    ).not.toHaveAttribute('aria-current');
+  });
+
+  it('does not mark Home on pages below the dashboard', () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard/projects/new']}>
+        <StudioSidebar />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Home' })).not.toHaveAttribute(
+      'aria-current',
+    );
+  });
+});

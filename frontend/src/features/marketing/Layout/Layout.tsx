@@ -8,7 +8,7 @@ interface LayoutProps {
 
 function Layout({ children, openSignIn }: LayoutProps) {
   return (
-    <div className="flex flex-col bg-backstage font-sans text-white">
+    <div className="flex min-h-screen flex-col bg-ink font-sans text-paper">
       <Header openSignIn={openSignIn} />
       <main className="flex-1">{children}</main>
       <Footer />

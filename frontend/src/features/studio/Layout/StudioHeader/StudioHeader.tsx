@@ -13,15 +13,15 @@ export default function StudioHeader({
   const displayName = user?.username || user?.email || 'User';
 
   return (
-    <header className="sticky top-0 z-20 border-b border-white/10 bg-backstage">
-      <div className="mx-auto w-full max-w-7xl px-4 py-3">
+    <header className="sticky top-0 z-20 border-b border-rule-dark bg-ink">
+      <div className="mx-auto w-full max-w-7xl px-4 py-2.5">
         <nav className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Mobile menu */}
             <button
               type="button"
               onClick={onOpenMobileNav}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 hover:bg-white/5 md:hidden"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-[6px] border border-rule-dark hover:bg-white/5 md:hidden"
               aria-label="Open navigation"
               aria-controls="studio-mobile-drawer"
               aria-expanded="false"
@@ -39,14 +39,18 @@ export default function StudioHeader({
             </button>
 
             <Link
-              className="hidden md:inline"
+              className="hidden items-end gap-2 rounded-[6px] text-paper md:inline-flex"
               to={state === 'authorized' ? '/dashboard' : '/'}
-              aria-label={state === 'authorized' ? 'Go to dashboard' : 'Home'}
+              aria-label={
+                state === 'authorized'
+                  ? 'RiffTube: go to dashboard'
+                  : 'RiffTube home'
+              }
             >
-              <TvIcon
-                className="h-7 w-auto fill-current text-white"
-                aria-hidden="true"
-              />
+              <TvIcon className="h-7 w-auto fill-current" aria-hidden="true" />
+              <span className="font-serif text-[22px] leading-none">
+                RiffTube
+              </span>
             </Link>
           </div>
 
@@ -61,19 +65,20 @@ export default function StudioHeader({
             {state === 'authorized' ? (
               <div className="hidden items-center gap-3 md:flex">
                 <Link
+                  className="rounded-full"
                   to="/studio/settings"
                   title={user?.username ?? user?.email ?? 'User'}
                 >
                   <img
                     src={`https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random`}
                     alt="avatar"
-                    className="h-8 w-8 rounded-full"
+                    className="h-8 w-8 rounded-full ring-1 ring-rule-dark"
                   />
                 </Link>
                 <button
                   type="button"
                   onClick={signOut}
-                  className="text-sm font-medium text-white/80 hover:text-white"
+                  className="cursor-pointer rounded-[6px] px-2 py-1.5 text-sm font-medium text-muted-dark hover:text-paper"
                 >
                   Sign out
                 </button>
@@ -81,7 +86,7 @@ export default function StudioHeader({
             ) : (
               <Link
                 to="/signin"
-                className="hidden text-sm font-semibold text-white hover:text-primary md:inline"
+                className="hidden rounded-[6px] px-2 py-1.5 text-sm font-medium text-paper hover:text-gold md:inline"
               >
                 Sign in
               </Link>
@@ -89,14 +94,16 @@ export default function StudioHeader({
           </div>
 
           <Link
-            className="md:hidden"
+            className="inline-flex items-end gap-2 rounded-[6px] text-paper md:hidden"
             to={state === 'authorized' ? '/dashboard' : '/'}
-            aria-label={state === 'authorized' ? 'Go to dashboard' : 'Home'}
+            aria-label={
+              state === 'authorized'
+                ? 'RiffTube: go to dashboard'
+                : 'RiffTube home'
+            }
           >
-            <TvIcon
-              className="h-7 w-auto fill-current text-white"
-              aria-hidden="true"
-            />
+            <TvIcon className="h-6 w-auto fill-current" aria-hidden="true" />
+            <span className="font-serif text-xl leading-none">RiffTube</span>
           </Link>
         </nav>
       </div>

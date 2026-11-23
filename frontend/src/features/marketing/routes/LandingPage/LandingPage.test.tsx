@@ -24,14 +24,21 @@ describe('<LandingPage />', () => {
       </MemoryRouter>,
     );
 
-  it('renders the hero word-mark', () => {
+  it('makes the tagline the one main heading', () => {
     renderPage();
 
-    const heroHeading = screen.getByRole('heading', {
-      level: 1,
-      name: /rifftube/i,
-    });
-    expect(heroHeading).toBeInTheDocument();
+    const headings = screen.getAllByRole('heading', { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toHaveTextContent(
+      /your voice\.\s*your commentary\.\s*your movie night\./i,
+    );
+  });
+
+  it('names the brand in the header link', () => {
+    renderPage();
+    expect(
+      screen.getByRole('link', { name: /rifftube home/i }),
+    ).toHaveAttribute('href', '/');
   });
 
   it('renders the “How It Works” section', () => {

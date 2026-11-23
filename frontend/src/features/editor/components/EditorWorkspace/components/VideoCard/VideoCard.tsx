@@ -19,7 +19,7 @@ function VideoCard({ riffs, videoId }: Props) {
     // left, as large as fits at 16:9. Stacked, it stays under 40% of the
     // screen height so the panels below it are still in view.
     <div className="flex w-full items-start justify-center lg:[container-type:size] lg:aspect-video lg:min-h-0 lg:shrink lg:justify-start">
-      <div className="relative aspect-video w-full max-w-[calc(40vh*16/9)] overflow-hidden rounded-lg bg-black shadow-lg lg:w-[min(100cqw,calc(100cqh*16/9))] lg:max-w-none">
+      <div className="relative aspect-video w-full max-w-[calc(40vh*16/9)] overflow-hidden rounded-[8px] bg-black ring-1 ring-rule-dark lg:w-[min(100cqw,calc(100cqh*16/9))] lg:max-w-none">
         {videoId ? (
           <>
             {/* — YouTube player — */}
@@ -35,7 +35,7 @@ function VideoCard({ riffs, videoId }: Props) {
             </div>
           </>
         ) : (
-          <p className="flex h-full items-center justify-center text-sm text-white/60">
+          <p className="flex h-full items-center justify-center text-sm text-muted-dark">
             This project has no video.
           </p>
         )}

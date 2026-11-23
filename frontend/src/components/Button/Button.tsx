@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-export type Variant = 'primary' | 'secondary' | 'lightMode';
+export type Variant = 'primary' | 'secondary' | 'lightMode' | 'ghost';
 export type Size = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -20,23 +20,27 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base =
-  'cursor-pointer inline-flex items-center justify-center rounded-lg font-semibold transition ' +
-  'disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none';
+  'cursor-pointer inline-flex items-center justify-center gap-2 rounded-[6px] font-semibold transition-colors ' +
+  'focus-ring disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none';
 
 const variantMap: Record<Variant, string> = {
-  primary:
-    'bg-primary text-white hover:bg-primary/80 disabled:bg-primary/40 ' +
-    'focus:outline-none focus:ring-2 focus:ring-primary/50',
+  /** Filled burgundy with paper text: the one main action in a region. */
+  primary: 'bg-primary text-paper hover:bg-primary-dark disabled:bg-primary/40',
 
+  /** Quiet outlined action that sits beside a primary one. */
   secondary:
-    'bg-reel-dust text-white hover:bg-[#3a3a39] ' +
-    'disabled:bg-[#333332] disabled:text-[#aaaaaa] disabled:opacity-40 disabled:cursor-not-allowed ' +
-    'focus:outline-none focus:ring-2 focus:ring-reel-dust/50',
+    'border border-strong-outline bg-surface-3 text-paper hover:border-smoke hover:bg-[#363236] ' +
+    'disabled:opacity-40',
+
+  /** Paper-filled; reads as a light button on dark surfaces. */
   lightMode:
-    'bg-white text-gray-900 hover:bg-gray-200 ' +
-    'disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed ' +
-    'focus:outline-none focus:ring-2 focus:ring-gray-200 ' +
-    'transition-colors duration-150',
+    'bg-paper text-ink hover:bg-paper-dim ' +
+    'disabled:bg-paper-dim disabled:text-muted-light',
+
+  /** Text-weight action for low-priority or destructive choices. */
+  ghost:
+    'bg-transparent text-muted-dark hover:bg-white/5 hover:text-paper ' +
+    'disabled:opacity-40',
 };
 
 const sizeMap: Record<Size, string> = {

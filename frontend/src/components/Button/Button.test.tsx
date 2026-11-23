@@ -24,7 +24,7 @@ describe('Button', () => {
     render(<Button>Default</Button>);
     const button = screen.getByRole('button');
     expect(button).toHaveClass('bg-primary');
-    expect(button).toHaveClass('text-white');
+    expect(button).toHaveClass('text-paper');
     expect(button).toHaveClass('h-12');
     expect(button).toHaveClass('px-4');
   });
@@ -32,14 +32,20 @@ describe('Button', () => {
   it('applies secondary variant', () => {
     render(<Button variant="secondary">Secondary</Button>);
     const button = screen.getByRole('button', { name: /secondary/i });
-    expect(button).toHaveClass('bg-reel-dust');
+    expect(button).toHaveClass('bg-surface-3');
   });
 
   it('applies lightMode variant', () => {
     render(<Button variant="lightMode">Light Mode</Button>);
     const button = screen.getByRole('button', { name: /light mode/i });
-    expect(button).toHaveClass('bg-white');
-    expect(button).toHaveClass('text-gray-900');
+    expect(button).toHaveClass('bg-paper');
+    expect(button).toHaveClass('text-ink');
+  });
+
+  it('applies ghost variant', () => {
+    render(<Button variant="ghost">Ghost</Button>);
+    const button = screen.getByRole('button', { name: /ghost/i });
+    expect(button).toHaveClass('bg-transparent');
   });
 
   it.each<[Size, string, string]>([
