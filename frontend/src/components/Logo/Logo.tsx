@@ -37,9 +37,8 @@ function Logo({ size = 'lg', className = '' }: LogoProps) {
       )}
     >
       <TvIcon className={twMerge('-mt-px', icon)} aria-hidden="true" />
-      <h1 className={twMerge("font-['Limelight',cursive] leading-none", text)}>
-        RiffTube
-      </h1>
+      {/* A wordmark, not a heading: each page names its own main heading. */}
+      <span className={twMerge('font-serif leading-none', text)}>RiffTube</span>
     </div>
   );
 }

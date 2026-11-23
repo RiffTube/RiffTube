@@ -9,12 +9,12 @@ export type AuthModalLayoutProps = {
 function AuthModalLayout({ title, children, footer }: AuthModalLayoutProps) {
   return (
     <>
-      <DialogTitle as="h2" className="mb-6 text-2xl font-bold text-white">
+      <DialogTitle as="h2" className="mb-6 pr-10 text-2xl font-bold text-paper">
         {title}
       </DialogTitle>
       {children}
       {footer && (
-        <div className="mt-6 text-center text-sm text-gray-400">{footer}</div>
+        <div className="mt-6 text-center text-sm text-muted-dark">{footer}</div>
       )}
     </>
   );

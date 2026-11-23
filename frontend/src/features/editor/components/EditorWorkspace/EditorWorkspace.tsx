@@ -25,7 +25,7 @@ interface Props {
 function Playhead() {
   const time = usePlayerTime();
   return (
-    <span className="font-mono text-sm text-white/70 tabular-nums">
+    <span className="font-mono text-sm whitespace-nowrap text-muted-dark tabular-nums">
       Playhead {formatTime(time)}
     </span>
   );
@@ -40,25 +40,23 @@ const SHORTCUTS = [
 ];
 
 /**
- * One line of key hints under the video. Whatever doesn't fit is cut off;
- * the "?" button opens the whole list.
+ * Key hints under the video. They wrap onto a second line when the column is
+ * narrow; whatever still doesn't fit is cut off, and "?" opens the whole list.
  */
 function ShortcutHints() {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <div className="flex min-w-0 flex-1 items-start gap-2">
+    <div className="flex min-w-0 flex-1 basis-[22rem] items-start gap-2">
       <ul
         id="editor-shortcuts"
         aria-label="Keyboard shortcuts"
-        className={`flex min-w-0 flex-1 gap-x-3 gap-y-1 text-xs text-white/50 ${
-          isOpen
-            ? 'flex-wrap'
-            : 'overflow-hidden [mask-image:linear-gradient(to_right,black_85%,transparent)] whitespace-nowrap'
+        className={`flex min-w-0 flex-1 flex-wrap gap-x-4 gap-y-1.5 py-1 text-[13px] leading-5 text-muted-dark ${
+          isOpen ? '' : 'max-h-[3.25rem] overflow-hidden'
         }`}
       >
         {SHORTCUTS.map(([keys, action]) => (
-          <li key={keys} className="shrink-0">
-            <kbd className="rounded bg-white/10 px-1 font-mono text-white/70">
+          <li key={keys} className="shrink-0 whitespace-nowrap">
+            <kbd className="rounded-[3px] border border-rule-dark bg-surface-3 px-1 font-mono text-xs text-paper">
               {keys}
             </kbd>{' '}
             {action}
@@ -71,7 +69,7 @@ function ShortcutHints() {
         aria-controls="editor-shortcuts"
         aria-label={isOpen ? 'Hide shortcuts' : 'Show all shortcuts'}
         onClick={() => setIsOpen(open => !open)}
-        className="h-5 w-5 shrink-0 cursor-pointer rounded-full border border-white/30 text-xs leading-none text-white/70 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:outline-none"
+        className="mr-0.5 grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded-full border border-smoke text-xs leading-none text-paper transition-colors hover:bg-white/10"
       >
         ?
       </button>
@@ -126,18 +124,21 @@ function EditorWorkspace({ projectTitle, videoId, riffs, editor }: Props) {
         <header className="flex min-w-0 items-center gap-3">
           <Link
             to="/dashboard"
-            className="shrink-0 text-sm text-white/60 hover:text-white"
+            className="shrink-0 rounded-[6px] text-sm text-muted-dark transition-colors hover:text-paper"
           >
             ← Dashboard
           </Link>
-          <h1 className="truncate text-lg font-semibold">{projectTitle}</h1>
+          <h1 className="truncate text-xl font-semibold text-paper">
+            {projectTitle}
+          </h1>
         </header>
 
         <VideoCard riffs={videoRiffs} videoId={videoId} />
 
-        <div className="flex min-w-0 items-center gap-x-4 gap-y-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
           <Button
             size="sm"
+            className="h-10 px-5 text-[15px]"
             isLoading={editor.isAdding}
             onClick={() => void editor.addAtPlayhead()}
           >
@@ -149,17 +150,18 @@ function EditorWorkspace({ projectTitle, videoId, riffs, editor }: Props) {
       </div>
 
       {/* Editor panels: scroll on their own beside (or under) the video. */}
-      <div className="min-h-0 min-w-0 flex-1 space-y-6 overflow-x-hidden overflow-y-auto pr-2 lg:w-[27rem] lg:flex-none 2xl:w-[29rem]">
+      {/* The inspector: one charcoal panel, its groups divided by fine rules. */}
+      <div className="min-h-0 min-w-0 flex-1 space-y-6 overflow-x-hidden overflow-y-auto rounded-[8px] border border-rule-dark bg-charcoal p-5 lg:w-[27rem] lg:flex-none 2xl:w-[29rem] [&>*+*]:border-t [&>*+*]:border-rule-dark [&>*+*]:pt-6">
         {editor.error && (
           <div
             role="alert"
-            className="flex items-start justify-between gap-3 rounded-lg border border-red-400/40 bg-red-500/10 px-3 py-2 text-sm text-red-100"
+            className="flex items-start justify-between gap-3 rounded-[6px] border border-red-400/40 bg-red-500/10 px-3 py-2 text-sm text-red-100"
           >
             <span>{editor.error}</span>
             <button
               type="button"
               onClick={editor.dismissError}
-              className="cursor-pointer underline hover:text-white"
+              className="cursor-pointer rounded-[2px] underline hover:text-white"
             >
               Dismiss
             </button>
@@ -167,15 +169,17 @@ function EditorWorkspace({ projectTitle, videoId, riffs, editor }: Props) {
         )}
 
         {riffs.length === 0 && (
-          <p className="text-sm text-white/60">
+          <p className="text-sm leading-relaxed text-muted-dark">
             This project has no riffs yet. Play the video and press{' '}
-            <kbd className="rounded bg-white/10 px-1 font-mono">T</kbd> or “+
-            Riff” where the first one should appear.
+            <kbd className="rounded-[3px] border border-rule-dark bg-surface-3 px-1 font-mono text-paper">
+              T
+            </kbd>{' '}
+            or “+ Riff” where the first one should appear.
           </p>
         )}
 
         {riffs.length > 0 && !draft && (
-          <p className="text-sm text-white/60">Select a riff to edit it.</p>
+          <p className="text-sm text-muted-dark">Select a riff to edit it.</p>
         )}
 
         {draft && (

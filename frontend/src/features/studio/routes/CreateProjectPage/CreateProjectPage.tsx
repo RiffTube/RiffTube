@@ -91,7 +91,7 @@ function CreateProjectPage() {
         )}
 
         {error && (
-          <p className="mt-4 text-sm text-red-500" role="alert">
+          <p className="mt-4 text-sm text-red-300" role="alert">
             {error}
           </p>
         )}

@@ -1,4 +1,6 @@
 import { useEffect, useState, type KeyboardEvent } from 'react';
+import { twMerge } from 'tailwind-merge';
+import { fieldControl, fieldLabel } from '../../../../styles/fields';
 import { formatTime, parseTime } from '../../../../utils/time';
 
 interface Props {
@@ -47,8 +49,8 @@ function TimeField({ id, label, value, onCommit }: Props) {
   };
 
   return (
-    <div>
-      <label htmlFor={id} className="mb-1 block text-xs text-white/70">
+    <div className="min-w-0">
+      <label htmlFor={id} className={fieldLabel}>
         {label}
       </label>
       <input
@@ -65,11 +67,11 @@ function TimeField({ id, label, value, onCommit }: Props) {
         }}
         onBlur={commit}
         onKeyDown={handleKeyDown}
-        className={`w-28 rounded-lg border-2 bg-transparent px-3 py-2 text-center font-mono text-sm tabular-nums focus:outline-none ${
-          invalid
-            ? 'border-red-400 focus:border-red-400'
-            : 'border-smoke focus:border-white'
-        }`}
+        className={twMerge(
+          'h-10 w-full px-2 text-center font-mono text-sm tabular-nums',
+          fieldControl,
+          invalid && 'border-red-400 hover:border-red-400 focus:border-red-400',
+        )}
       />
       {invalid && (
         <p id={`${id}-error`} className="mt-1 text-xs text-red-300">

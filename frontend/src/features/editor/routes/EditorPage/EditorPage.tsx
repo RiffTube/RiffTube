@@ -31,7 +31,10 @@ function EditorPage() {
             ? 'Project not found.'
             : 'Something went wrong loading this project.'}
         </p>
-        <Link to="/dashboard" className="underline hover:text-white">
+        <Link
+          to="/dashboard"
+          className="rounded-[2px] underline underline-offset-4 hover:text-gold"
+        >
           Back to dashboard
         </Link>
       </EditorMessage>
@@ -81,7 +84,7 @@ function LoadedEditor({ project, fetchedRiffs }: LoadedEditorProps) {
       ref={container}
       tabIndex={-1}
       onKeyDown={handleKeyDown}
-      className="flex h-screen bg-backstage text-white outline-none"
+      className="flex h-screen bg-ink text-paper outline-none"
     >
       <RiffSidebar
         riffs={shownRiffs}
@@ -104,7 +107,7 @@ function LoadedEditor({ project, fetchedRiffs }: LoadedEditorProps) {
 
 function EditorMessage({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-3 bg-backstage text-white/80">
+    <div className="flex h-screen flex-col items-center justify-center gap-3 bg-ink text-paper">
       {children}
     </div>
   );

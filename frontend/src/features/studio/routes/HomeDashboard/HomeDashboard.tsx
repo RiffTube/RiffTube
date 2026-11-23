@@ -29,12 +29,12 @@ export default function HomeDashboard() {
   }, []);
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-      <div className="space-y-4 md:col-span-2">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="space-y-6 md:col-span-2">
         <ProjectsCard />
         <ChannelAnalyticsCard data={analytics} />
       </div>
-      <div className="space-y-4">
+      <div className="space-y-6">
         <ExploreRecommendationsCard items={recs} />
       </div>
     </div>

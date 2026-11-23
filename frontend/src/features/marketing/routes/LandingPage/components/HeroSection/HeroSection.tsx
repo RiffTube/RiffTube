@@ -1,11 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
-import Logo from '@/components/Logo';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import HeroTelevision from '../HeroTelevision';
 
 interface HeroSectionProps {
   openSignUp: () => void;
 }
+
+const TAGLINE = ['Your voice.', 'Your commentary.', 'Your movie night.'];
 
 function HeroSection({ openSignUp }: HeroSectionProps) {
   const { state } = useAuth();
@@ -20,27 +22,23 @@ function HeroSection({ openSignUp }: HeroSectionProps) {
   };
 
   return (
-    <section className="overflow-hidden bg-backstage text-white">
-      <div className="mx-auto max-w-lg space-y-6 px-4 py-8 sm:max-w-xl sm:py-12 md:max-w-screen-2xl lg:py-20">
-        <div className="rounded-2xl bg-flicker-white p-4 text-black shadow-2xl sm:p-8">
-          <Logo />
-          <p className="mt-3 mb-4 space-y-0.5 text-center text-lg leading-snug sm:mb-6 sm:text-xl md:text-left md:text-2xl">
-            <span className="block">Your voice.</span>
-            <span className="block">Your commentary.</span>
-            <span className="block">Your movie night.</span>
-          </p>
+    <section className="surface-paper bg-paper text-ink">
+      <div className="page-grid grid grid-cols-1 items-center gap-y-10 pt-8 pb-12 sm:pt-12 lg:grid-cols-[48fr_52fr] lg:gap-x-8 lg:pt-6 lg:pb-14">
+        <div>
+          <h1 className="text-[clamp(28px,9vw,34px)] leading-[1.09] font-bold tracking-[-0.02em] sm:text-5xl sm:leading-[1.05] lg:text-[46px] xl:text-[60px] xl:leading-[62px]">
+            {TAGLINE.map(line => (
+              <span key={line} className="block sm:whitespace-nowrap">
+                {line}
+              </span>
+            ))}
+          </h1>
 
-          <div className="flex justify-center md:justify-start">
-            <Button onClick={handleCta} size="lg">
-              Start Riffing
-            </Button>
-          </div>
+          <Button onClick={handleCta} size="lg" className="mt-6">
+            Start Riffing
+          </Button>
         </div>
 
-        <div className="relative overflow-hidden rounded-b-2xl shadow-2xl">
-          <div className="h-32 bg-[url('/theater.png')] bg-cover bg-center sm:h-40 md:h-48 lg:h-64" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-        </div>
+        <HeroTelevision className="mx-auto w-[min(72%,260px)] sm:w-[300px] lg:w-[min(100%,372px)] xl:w-[392px]" />
       </div>
     </section>
   );

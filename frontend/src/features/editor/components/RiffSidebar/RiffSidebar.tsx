@@ -12,12 +12,12 @@ interface Props {
 
 function RiffSidebar({ riffs, selectedId, overlappingIds, onSelect }: Props) {
   return (
-    <aside className="hidden w-64 shrink-0 space-y-4 overflow-y-auto p-4 xl:block">
-      <Logo size="md" />
+    <aside className="hidden w-64 shrink-0 space-y-6 overflow-y-auto border-r border-rule-dark p-4 xl:block">
+      <Logo size="sm" className="justify-start pt-1.5 pl-1 md:justify-start" />
       {riffs.length === 0 && (
-        <p className="text-sm text-gray-400">No riffs yet.</p>
+        <p className="text-sm text-muted-dark">No riffs yet.</p>
       )}
-      <ul className="space-y-2">
+      <ul className="space-y-1">
         {riffs.map(r => {
           const isActive = r.id === selectedId;
           return (
@@ -26,14 +26,21 @@ function RiffSidebar({ riffs, selectedId, overlappingIds, onSelect }: Props) {
                 type="button"
                 aria-current={isActive ? 'true' : undefined}
                 onClick={() => onSelect(r.id)}
-                className={`w-full cursor-pointer rounded-2xl border-2 p-2 text-left transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:outline-none ${
-                  isActive ? 'border-white' : 'border-transparent'
+                // Selection: charcoal fill + slim gold bar on the left.
+                // Keyboard focus: the global full outline, so the two can be
+                // told apart (and seen together on the selected riff).
+                className={`w-full cursor-pointer rounded-[6px] py-2 pr-2 pl-3 text-left transition-colors ${
+                  isActive
+                    ? 'bg-charcoal shadow-[inset_3px_0_0_var(--color-gold)]'
+                    : 'hover:bg-white/5'
                 }`}
               >
-                <span className="block truncate font-medium">
+                <span
+                  className={`block truncate ${isActive ? 'font-semibold text-paper' : 'font-medium text-paper/90'}`}
+                >
                   {r.title || r.text || 'Untitled riff'}
                 </span>
-                <span className="block font-mono text-xs text-gray-400 tabular-nums">
+                <span className="mt-0.5 block font-mono text-xs text-muted-dark tabular-nums">
                   {formatTime(r.start)} – {formatTime(r.end)}
                 </span>
                 {overlappingIds.has(r.id) && (

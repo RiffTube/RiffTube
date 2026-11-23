@@ -8,7 +8,7 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: { type: 'radio' },
-      options: ['primary', 'secondary'],
+      options: ['primary', 'secondary', 'lightMode', 'ghost'],
     },
     size: {
       control: { type: 'radio' },
@@ -45,6 +45,13 @@ export const Secondary: Story = {
 
 export const LightMode: Story = {
   args: { variant: 'lightMode' },
+  parameters: {
+    controls: { exclude: ['variant'] },
+  },
+};
+
+export const Ghost: Story = {
+  args: { variant: 'ghost' },
   parameters: {
     controls: { exclude: ['variant'] },
   },

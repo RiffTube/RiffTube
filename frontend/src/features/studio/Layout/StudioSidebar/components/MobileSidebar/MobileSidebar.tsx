@@ -52,18 +52,18 @@ export default function MobileSidebar({
         role="dialog"
         aria-modal="true"
         className={[
-          'absolute top-0 left-0 h-full w-80 max-w-[85vw] border-r border-white/10 bg-backstage shadow-2xl',
+          'absolute top-0 left-0 h-full w-80 max-w-[85vw] border-r border-rule-dark bg-ink shadow-2xl',
           'transition-transform',
           open ? 'translate-x-0' : '-translate-x-full',
         ].join(' ')}
       >
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-rule-dark px-4 py-3">
           <span className="text-sm font-semibold">Menu</span>
           <button
             ref={firstFocusable}
             type="button"
             onClick={onClose}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 hover:bg-white/5"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-[6px] border border-rule-dark hover:bg-white/5"
             aria-label="Close navigation"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">

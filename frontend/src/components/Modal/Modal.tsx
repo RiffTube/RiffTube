@@ -17,7 +17,7 @@ export interface ModalProps {
 }
 function Modal({ isOpen, onClose, children, className = '' }: ModalProps) {
   const panelClasses = twMerge(
-    'relative w-full max-w-md rounded-2xl bg-reel-dust p-8 text-white shadow-xl',
+    'relative w-full max-w-md rounded-[8px] border border-rule-dark bg-charcoal p-8 text-paper shadow-2xl shadow-black/60',
     className,
   );
 
@@ -30,7 +30,7 @@ function Modal({ isOpen, onClose, children, className = '' }: ModalProps) {
         onClose={onClose}
       >
         {/* Backdrop — click or Esc triggers onClose automatically */}
-        <DialogBackdrop className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+        <DialogBackdrop className="fixed inset-0 bg-black/55 backdrop-blur-sm" />
 
         {/* Center the panel */}
         <div className="fixed inset-0 flex items-center justify-center overflow-y-auto p-4">
@@ -49,7 +49,7 @@ function Modal({ isOpen, onClose, children, className = '' }: ModalProps) {
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
-                className="absolute top-4 right-4 cursor-pointer rounded-full p-1 hover:bg-white/10 focus:ring-2 focus:ring-white focus:outline-none"
+                className="absolute top-3 right-3 grid h-10 w-10 cursor-pointer place-items-center rounded-full text-muted-dark transition-colors hover:bg-white/10 hover:text-paper"
               >
                 <X className="h-6 w-6" />
               </button>

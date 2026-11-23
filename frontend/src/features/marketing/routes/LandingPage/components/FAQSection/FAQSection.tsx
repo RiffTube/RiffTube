@@ -29,19 +29,19 @@ const faqs = [
 
 function FAQSection() {
   return (
-    <section className="bg-vintage-teal py-20 text-white">
-      <div className="container mx-auto max-w-screen-2xl px-4">
-        <h2 className="mb-10 text-center font-['Limelight',cursive] text-4xl md:text-6xl">
+    <section className="bg-charcoal text-paper">
+      <div className="page-grid grid grid-cols-1 gap-y-8 py-16 sm:py-20 lg:grid-cols-[4fr_8fr] lg:gap-x-8">
+        <h2 className="font-serif text-[32px] leading-tight md:text-[38px]">
           FAQ
         </h2>
 
-        <dl className="space-y-6 lg:hidden">
+        <dl className="border-t border-rule-dark lg:hidden">
           {faqs.map(faqItem => (
             <FAQEntry key={faqItem.question} {...faqItem} isAccordion />
           ))}
         </dl>
 
-        <dl className="hidden space-y-8 lg:block">
+        <dl className="hidden border-t border-rule-dark lg:block">
           {faqs.map(faqItem => (
             <FAQEntry key={faqItem.question} {...faqItem} isAccordion={false} />
           ))}

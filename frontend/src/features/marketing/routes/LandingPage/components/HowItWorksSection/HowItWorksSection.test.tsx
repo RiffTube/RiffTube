@@ -25,11 +25,15 @@ describe('<HowItWorksSection />', () => {
     expect(heading.tagName).toBe('H2');
   });
 
-  it('renders exactly three step cards in the grid', () => {
-    const { container } = render(<HowItWorksSection />);
-    const grid = container.querySelector('div.grid');
-    expect(grid).toBeInTheDocument();
-    expect(grid!.children).toHaveLength(3);
+  it('lists exactly three steps, in order', () => {
+    render(<HowItWorksSection />);
+    const items = screen.getAllByRole('listitem');
+    expect(items).toHaveLength(3);
+    expect(items.map(item => item.querySelector('h3')?.textContent)).toEqual([
+      'Pick Your Video',
+      'Add Your Riffs',
+      'Share the Fun',
+    ]);
   });
 
   it("renders each step's title and description", () => {

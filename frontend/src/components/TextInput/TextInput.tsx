@@ -66,10 +66,10 @@ function TextInput(
   const describedBy = showError ? `${id}-error` : undefined;
 
   const labelClasses =
-    'pointer-events-none absolute top-2 left-4 text-xs font-medium text-silver-dust';
+    'pointer-events-none absolute top-2 left-4 text-xs font-medium text-muted-dark';
 
   const inputClasses = twMerge(
-    'peer block w-full rounded-2xl border-2 border-smoke bg-transparent placeholder-gray-600 transition focus:border-silver-dust focus:ring-4 focus:ring-silver-dust/50 focus:outline-none invalid:focus:border-red-500 invalid:focus:ring-red-500/50 disabled:cursor-not-allowed disabled:bg-[#333333] disabled:text-[#aaaaaa] disabled:opacity-40',
+    'peer block w-full rounded-[6px] border border-smoke bg-ink text-paper placeholder:text-[#8f877f] transition hover:border-muted-dark focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none invalid:focus:border-red-400 invalid:focus:ring-red-400 disabled:cursor-not-allowed disabled:bg-surface-3 disabled:text-muted-dark disabled:opacity-60',
     readOnly ? 'border-0 border-none cursor-default focus:ring-0 ' : '',
     sizeClassesMap[size],
 
@@ -108,7 +108,7 @@ function TextInput(
 
       <div className="mt-1 ml-1 h-5">
         {showError && (
-          <p id={`${id}-error`} className="text-xs text-red-500">
+          <p id={`${id}-error`} className="text-xs text-red-300">
             {errorMessage ?? 'Invalid value'}
           </p>
         )}

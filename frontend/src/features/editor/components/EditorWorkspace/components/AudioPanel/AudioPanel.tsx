@@ -16,29 +16,37 @@ function AudioPanel() {
   };
 
   return (
-    <section className="space-y-2">
+    <section className="space-y-3">
       {/* Waveform / placeholder */}
-      <div className="flex h-24 items-center justify-center rounded-lg border-2 border-smoke bg-transparent">
+      <div className="flex h-24 items-center justify-center rounded-[8px] border border-dashed border-smoke bg-ink px-3">
         {hasAudio ? (
           /* Dummy waveform bar — swap for real waveform later */
-          <div className="h-16 w-full animate-pulse rounded bg-gradient-to-r from-blue-500/60 to-purple-500/60" />
+          <div className="h-14 w-full animate-pulse rounded-[6px] bg-gradient-to-r from-primary/80 to-gold/60" />
         ) : (
-          <span className="text-white">No audio yet</span>
+          <span className="text-sm text-muted-dark">No audio yet</span>
         )}
       </div>
 
       {/* Action Buttons */}
       {hasAudio ? (
-        <div className="flex gap-4">
-          <Button variant="secondary" onClick={handleRecord}>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" size="sm" onClick={handleRecord}>
             Re-record
           </Button>
-          <Button variant="lightMode" onClick={handleDelete}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hover:text-[#f0a39c]"
+            onClick={handleDelete}
+          >
             Delete
           </Button>
         </div>
       ) : (
-        <Button onClick={handleRecord}>● Record</Button>
+        // The red dot is part of the label, so Record never relies on colour.
+        <Button variant="secondary" size="sm" onClick={handleRecord}>
+          <span className="text-[#e5544b]">●</span> Record
+        </Button>
       )}
     </section>
   );

@@ -1,6 +1,6 @@
 import Button from '@/components/Button';
-import TextInput from '@/components/TextInput';
 import type { Riff } from '@/features/riffs/types';
+import { fieldControl, fieldLabel } from '../../../../styles/fields';
 
 interface Props {
   riff: Riff;
@@ -26,19 +26,31 @@ function RiffControls({
   disabled = false,
 }: Props) {
   return (
-    <div>
-      <TextInput
-        id="riff-name"
-        label="Name"
-        value={riff.title}
-        onChange={event => onChange({ title: event.target.value })}
-        placeholder="Riff title"
-        className="w-full"
-        disabled={disabled}
-      />
+    <div className="space-y-4">
+      <div>
+        <label htmlFor="riff-name" className={fieldLabel}>
+          Name
+        </label>
+        <input
+          id="riff-name"
+          type="text"
+          value={riff.title}
+          onChange={event => onChange({ title: event.target.value })}
+          placeholder="Riff title"
+          disabled={disabled}
+          className={`h-11 w-full px-3 text-base ${fieldControl}`}
+        />
+      </div>
 
+      {/* Save leads; Undo is secondary; Delete is a quiet, separate choice. */}
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="secondary" disabled={disabled} onClick={onDelete}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="-ml-3 hover:text-[#f0a39c]"
+          disabled={disabled}
+          onClick={onDelete}
+        >
           Delete
         </Button>
 
@@ -47,6 +59,7 @@ function RiffControls({
 
         <Button
           variant="secondary"
+          size="sm"
           disabled={disabled || !isDirty}
           onClick={onRevert}
         >
@@ -55,9 +68,10 @@ function RiffControls({
 
         <Button
           aria-label={isDirty ? 'Save riff' : 'No changes to save'}
+          size="sm"
+          className="min-w-20"
           disabled={disabled || !isDirty}
           isLoading={isSaving}
-          variant="lightMode"
           onClick={onSave}
         >
           Save
