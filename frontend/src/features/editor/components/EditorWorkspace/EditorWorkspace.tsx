@@ -212,7 +212,8 @@ function EditorWorkspace({ projectTitle, videoId, riffs, editor }: Props) {
               disabled={editor.isRestoring}
             />
 
-            <AudioPanel />
+            {/* Recordings aren't saved yet, so each riff starts with none. */}
+            <AudioPanel key={draft.id} />
 
             <RevisionPanel
               // Each riff has its own history, so start the panel afresh.

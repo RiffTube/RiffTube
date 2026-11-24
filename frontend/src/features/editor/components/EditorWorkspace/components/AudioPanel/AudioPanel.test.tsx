@@ -2,65 +2,86 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AudioPanel from './AudioPanel';
 
+class FakeRecorder {
+  state: 'inactive' | 'recording' = 'inactive';
+  mimeType = 'audio/webm';
+  ondataavailable: ((e: { data: Blob }) => void) | null = null;
+  onstop: (() => void) | null = null;
+  start() {
+    this.state = 'recording';
+  }
+  stop() {
+    this.state = 'inactive';
+    this.ondataavailable?.({ data: new Blob(['abc'], { type: 'audio/webm' }) });
+    this.onstop?.();
+  }
+}
+
+const stopTrack = vi.fn();
+const getUserMedia = vi.fn();
+
+beforeEach(() => {
+  stopTrack.mockClear();
+  getUserMedia.mockReset();
+  getUserMedia.mockResolvedValue({ getTracks: () => [{ stop: stopTrack }] });
+  Object.defineProperty(navigator, 'mediaDevices', {
+    configurable: true,
+    value: { getUserMedia },
+  });
+  vi.stubGlobal('MediaRecorder', FakeRecorder);
+  URL.createObjectURL = vi.fn(() => 'blob:fake');
+  URL.revokeObjectURL = vi.fn();
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 describe('<AudioPanel />', () => {
-  it('renders the placeholder when no audio is present', () => {
+  it('starts with no audio and a Record button', () => {
     render(<AudioPanel />);
-    // Should show the "No audio yet" message
     expect(screen.getByText('No audio yet')).toBeInTheDocument();
-    // And a single "● Record" button
-    expect(
-      screen.getByRole('button', { name: /● Record/i }),
-    ).toBeInTheDocument();
-    // Should not show Re‑record or Delete buttons yet
-    expect(screen.queryByRole('button', { name: /Re-record/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /Delete/i })).toBeNull();
+    expect(screen.getByRole('button', { name: /Record/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Delete/ })).toBeNull();
   });
 
-  it('shows waveform and action buttons after recording', async () => {
+  it('records from the mic until Stop, then offers playback', async () => {
     const user = userEvent.setup();
-    render(<AudioPanel />);
-    // Click the Record button
-    await user.click(screen.getByRole('button', { name: /● Record/i }));
-    // Placeholder text should disappear
-    expect(screen.queryByText('No audio yet')).toBeNull();
-    // Record button should be replaced by Re‑record and Delete
+    const { container } = render(<AudioPanel />);
+
+    await user.click(screen.getByRole('button', { name: /Record/ }));
+    expect(getUserMedia).toHaveBeenCalledWith({ audio: true });
+    expect(screen.getByText(/Recording…/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Stop/ }));
+    expect(stopTrack).toHaveBeenCalled();
+    expect(container.querySelector('audio')).toHaveAttribute(
+      'src',
+      'blob:fake',
+    );
     expect(
-      screen.getByRole('button', { name: /Re-record/i }),
+      screen.getByRole('button', { name: /Re-record/ }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Delete/i })).toBeInTheDocument();
-    // The waveform div should be present (identified by its pulse animation class)
-    const waveform = document.querySelector('.animate-pulse');
-    expect(waveform).toBeInTheDocument();
   });
 
-  it('allows deleting the recorded audio and returns to placeholder', async () => {
+  it('deletes the recording', async () => {
     const user = userEvent.setup();
     render(<AudioPanel />);
-    // Record once
-    await user.click(screen.getByRole('button', { name: /● Record/i }));
-    // Now click Delete
-    await user.click(screen.getByRole('button', { name: /Delete/i }));
-    // Should go back to showing the placeholder
+    await user.click(screen.getByRole('button', { name: /Record/ }));
+    await user.click(screen.getByRole('button', { name: /Stop/ }));
+    await user.click(screen.getByRole('button', { name: /Delete/ }));
     expect(screen.getByText('No audio yet')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /● Record/i }),
-    ).toBeInTheDocument();
-    // Re‑record and Delete buttons should no longer be in the document
-    expect(screen.queryByRole('button', { name: /Re-record/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /Delete/i })).toBeNull();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:fake');
   });
 
-  it('allows re-recording and keeps audio state', async () => {
+  it('explains when the microphone is blocked', async () => {
+    getUserMedia.mockRejectedValue(new Error('denied'));
     const user = userEvent.setup();
     render(<AudioPanel />);
-    // Record once
-    await user.click(screen.getByRole('button', { name: /● Record/i }));
-    // Click Re‑record
-    await user.click(screen.getByRole('button', { name: /Re-record/i }));
-    // Should still show Re‑record and Delete
-    expect(
-      screen.getByRole('button', { name: /Re-record/i }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Delete/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Record/ }));
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      /Microphone access was blocked/,
+    );
+    expect(screen.getByRole('button', { name: /Record/ })).toBeEnabled();
   });
 });
